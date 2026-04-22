@@ -104,7 +104,7 @@ Describe 'ConvertTo-SystemInfoText' {
         $text | Should -Match 'TPM: Present, but not ready \| Version 2\.0'
         $text | Should -Match 'Hypervisors: VMware Workstation installed \| Oracle VirtualBox not detected'
         $text | Should -Match 'CPU layout: 8 cores, 16 threads, reported max clock 4200 MHz'
-        $text | Should -Match 'Memory: 16 GB total, 3,7 GB free across 2 module\(s\)'
+        $text | Should -Match 'Memory: 16 GB total, 3[.,]7 GB free across 2 module\(s\)'
         $text | Should -Match 'C: \[System\].*VM storage fit: Usable, but not ideal for VM files'
         $text | Should -Match 'D:.*VM storage fit: Preferred for VM files'
         $text | Should -Match 'E:.*VM storage fit: Too tight for practical VM files'
@@ -115,7 +115,7 @@ Describe 'ConvertTo-SystemInfoText' {
 
         $text = ConvertTo-SystemInfoText -Report $report
 
-        $text | Should -Match 'Memory: 16 GB total, 3,7 GB free'
+        $text | Should -Match 'Memory: 16 GB total, 3[.,]7 GB free'
         $text | Should -Not -Match 'across 0 module\(s\)'
     }
 
@@ -124,7 +124,7 @@ Describe 'ConvertTo-SystemInfoText' {
 
         $text = ConvertTo-SystemInfoText -Report $report
 
-        $text | Should -Match 'Memory: 16 GB total, 3,7 GB free'
+        $text | Should -Match 'Memory: 16 GB total, 3[.,]7 GB free'
         $text | Should -Not -Match 'module\(s\)'
     }
 }
