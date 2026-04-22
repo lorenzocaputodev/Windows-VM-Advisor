@@ -1,0 +1,64 @@
+# Runtime output
+/Results/
+/artifacts/
+/coverage/
+/TestResults/
+/out/
+/dist/
+/build/
+
+# Archives and packaged files
+*.zip
+*.7z
+*.rar
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+*.bak
+*.old
+
+# PowerShell backup leftovers
+*.psd1.bak
+*.psm1.bak
+*.ps1.bak
+
+# Editor / IDE
+.vscode/
+.vs/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local environments / caches
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node / frontend leftovers
+node_modules/
+
+# Python compiled files
+*.pyc
+*.pyo
+
+# .NET / generic build leftovers
+bin/
+obj/
+
+# Test / coverage artifacts
+coverage.xml
+junit.xml
+*.trx
+
+# Local screenshots / exports / ad-hoc captures
+*.rtf
+
+# GitHub-ready packaging leftovers
+*_github-ready.zip

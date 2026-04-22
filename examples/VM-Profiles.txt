@@ -1,0 +1,61 @@
+﻿Windows-VM-Advisor - VM Profiles
+================================
+
+Use these settings as a practical starting point. Increase them only if needed.
+
+Best choices:
+- Linux Mint [Recommended]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Ubuntu LTS [Recommended]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Windows 10 [Recommended]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 6144 MB RAM, 80 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+Usable, but less ideal:
+- Debian Stable [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 2048 MB RAM, 40 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Lubuntu [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 2048 MB RAM, 40 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Fedora Workstation [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- NixOS [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Arch Linux [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Rocky Linux [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- FreeBSD [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
+- Kali Linux [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:

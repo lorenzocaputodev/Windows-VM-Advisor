@@ -1,0 +1,481 @@
+﻿{
+    "tool_version":  "1.0.0",
+    "generated_at":  "2026-04-21T00:00:00Z",
+    "inputs":  {
+                   "guest_preference":  "auto",
+                   "mode":  "balanced",
+                   "usage":  "general_testing",
+                   "hypervisor_preference":  "auto"
+               },
+    "system_information":  {
+                               "os":  {
+                                          "name":  "Windows 10 Pro",
+                                          "version":  "22H2",
+                                          "build":  "19045",
+                                          "architecture":  "64-bit"
+                                      },
+                               "cpu":  {
+                                           "model":  "AMD Ryzen 5 3600",
+                                           "manufacturer":  "AuthenticAMD",
+                                           "cores":  6,
+                                           "threads":  12,
+                                           "max_clock_mhz":  4200,
+                                           "virtualization_supported":  true,
+                                           "virtualization_enabled_in_firmware":  true,
+                                           "slat_supported":  true
+                                       },
+                               "memory":  {
+                                              "total_gb":  12.0,
+                                              "free_gb":  6.5,
+                                              "module_count":  2
+                                          },
+                               "storage":  {
+                                               "system_drive":  "C:",
+                                               "system_drive_fs":  "NTFS",
+                                               "system_drive_total_gb":  512.0,
+                                               "system_drive_free_gb":  120.0,
+                                               "physical_media_hint":  "SSD",
+                                               "drives":  [
+                                                              {
+                                                                  "drive_letter":  "C:",
+                                                                  "is_system_drive":  true,
+                                                                  "filesystem":  "NTFS",
+                                                                  "total_gb":  512.0,
+                                                                  "free_gb":  120.0,
+                                                                  "storage_type_hint":  "SSD",
+                                                                  "vm_storage_suitable":  true
+                                                              },
+                                                              {
+                                                                  "drive_letter":  "D:",
+                                                                  "is_system_drive":  false,
+                                                                  "filesystem":  "NTFS",
+                                                                  "total_gb":  1000.0,
+                                                                  "free_gb":  320.0,
+                                                                  "storage_type_hint":  "SSD",
+                                                                  "vm_storage_suitable":  true
+                                                              }
+                                                          ],
+                                               "preferred_vm_storage":  {
+                                                                            "drive_letter":  "D:",
+                                                                            "is_system_drive":  false,
+                                                                            "filesystem":  "NTFS",
+                                                                            "total_gb":  1000.0,
+                                                                            "free_gb":  320.0,
+                                                                            "storage_type_hint":  "SSD",
+                                                                            "vm_storage_suitable":  true
+                                                                        }
+                                           },
+                               "firmware":  {
+                                                "boot_mode":  "UEFI",
+                                                "secure_boot":  false
+                                            },
+                               "tpm":  {
+                                           "present":  false,
+                                           "ready":  false,
+                                           "version":  "Unknown"
+                                       },
+                               "hypervisors":  {
+                                                   "vmware_workstation_installed":  false,
+                                                   "virtualbox_installed":  false
+                                               },
+                               "windows_features":  {
+                                                        "hyperv_enabled":  false,
+                                                        "memory_integrity_enabled":  false,
+                                                        "device_guard_available":  true
+                                                    },
+                               "notes":  [
+
+                                         ]
+                           },
+    "vm_readiness":  {
+                         "state":  "ok",
+                         "headline":  "This PC is ready for practical VM use, with Linux guests as the clearest first picks.",
+                         "primary_reason":  "Linux Mint is the clearest overall fit, while several other practical guests also make sense.",
+                         "blockers":  [
+
+                                      ],
+                         "limitations":  [
+
+                                         ],
+                         "checks":  [
+                                        {
+                                            "id":  "hardware-virtualization",
+                                            "label":  "CPU virtualization support",
+                                            "status":  "ok",
+                                            "details":  "Hardware virtualization extensions were detected."
+                                        },
+                                        {
+                                            "id":  "firmware-virtualization",
+                                            "label":  "Firmware virtualization state",
+                                            "status":  "ok",
+                                            "details":  "Hardware virtualization appears to be enabled in BIOS or UEFI."
+                                        },
+                                        {
+                                            "id":  "slat",
+                                            "label":  "Second Level Address Translation (SLAT)",
+                                            "status":  "ok",
+                                            "details":  "SLAT support was detected."
+                                        },
+                                        {
+                                            "id":  "memory",
+                                            "label":  "Host RAM capacity",
+                                            "status":  "ok",
+                                            "details":  "12,0 GB of RAM leaves room for practical VM use."
+                                        },
+                                        {
+                                            "id":  "system-drive-pressure",
+                                            "label":  "System drive pressure",
+                                            "status":  "ok",
+                                            "details":  "120,0 GB is free on the system drive."
+                                        },
+                                        {
+                                            "id":  "vm-storage-availability",
+                                            "label":  "VM storage availability",
+                                            "status":  "ok",
+                                            "details":  "Preferred VM storage: D: (SSD, 320,0 GB free)."
+                                        },
+                                        {
+                                            "id":  "hyperv",
+                                            "label":  "Hyper-V",
+                                            "status":  "ok",
+                                            "details":  "Hyper-V is disabled."
+                                        },
+                                        {
+                                            "id":  "memory-integrity",
+                                            "label":  "Memory Integrity",
+                                            "status":  "ok",
+                                            "details":  "Memory Integrity is disabled."
+                                        },
+                                        {
+                                            "id":  "boot-mode",
+                                            "label":  "Boot mode",
+                                            "status":  "ok",
+                                            "details":  "Detected boot mode: UEFI."
+                                        },
+                                        {
+                                            "id":  "secure-boot",
+                                            "label":  "Secure Boot",
+                                            "status":  "info",
+                                            "details":  "Secure Boot is not enabled or could not be confirmed."
+                                        },
+                                        {
+                                            "id":  "tpm",
+                                            "label":  "TPM readiness",
+                                            "status":  "info",
+                                            "details":  "TPM 2.0 was not confirmed."
+                                        },
+                                        {
+                                            "id":  "device-guard",
+                                            "label":  "Device Guard detection",
+                                            "status":  "ok",
+                                            "details":  "Device Guard information was detected."
+                                        }
+                                    ],
+                         "takeaway":  "This PC is ready for practical VM use. Linux Mint is the clearest overall fit."
+                     },
+    "recommendations":  [
+                            {
+                                "id":  "linux-mint",
+                                "display_name":  "Linux Mint",
+                                "family":  "linux",
+                                "flavor":  "Cinnamon",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://linuxmint.com/download.php",
+                                "official_release_page":  "https://blog.linuxmint.com/",
+                                "compatibility_label":  "recommended",
+                                "fit_reason":  "Balanced desktop Linux choice for moderate hardware.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "ubuntu-lts",
+                                "display_name":  "Ubuntu LTS",
+                                "family":  "linux",
+                                "flavor":  "Ubuntu",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://ubuntu.com/download/desktop",
+                                "official_release_page":  "https://wiki.ubuntu.com/Releases",
+                                "compatibility_label":  "recommended",
+                                "fit_reason":  "Mainstream and broadly supported Linux guest for general VM use.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "windows-10",
+                                "display_name":  "Windows 10",
+                                "family":  "windows",
+                                "flavor":  "Standard",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.microsoft.com/software-download/windows10",
+                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/release-information",
+                                "compatibility_label":  "recommended",
+                                "fit_reason":  "Most forgiving Windows desktop option for broader host compatibility.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  6144,
+                                                   "disk_gb":  80,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "debian-stable",
+                                "display_name":  "Debian Stable",
+                                "family":  "linux",
+                                "flavor":  "Stable",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.debian.org/distrib/",
+                                "official_release_page":  "https://www.debian.org/releases/stable/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Efficient Linux choice, but it fits best when the VM stays modest.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  2048,
+                                                   "disk_gb":  40,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "lubuntu",
+                                "display_name":  "Lubuntu",
+                                "family":  "linux",
+                                "flavor":  "LXQt",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://lubuntu.me/downloads/",
+                                "official_release_page":  "https://lubuntu.me/category/release/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Very light Linux desktop that still works here with modest VM settings.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  2048,
+                                                   "disk_gb":  40,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "fedora-workstation",
+                                "display_name":  "Fedora Workstation",
+                                "family":  "linux",
+                                "flavor":  "GNOME",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://fedoraproject.org/workstation/download",
+                                "official_release_page":  "https://docs.fedoraproject.org/en-US/fedora/latest/release-notes/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Modern Linux desktop that stays workable here, but it is not the most conservative fit.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "nixos",
+                                "display_name":  "NixOS",
+                                "family":  "linux",
+                                "flavor":  "Declarative",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://nixos.org/download/",
+                                "official_release_page":  "https://nixos.org/blog/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Advanced declarative Linux option that can work here, though it is not the simplest default desktop choice.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "arch-linux",
+                                "display_name":  "Arch Linux",
+                                "family":  "linux",
+                                "flavor":  "Rolling",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://archlinux.org/download/",
+                                "official_release_page":  "https://archlinux.org/news/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Advanced Linux guest that can work here, but it fits best for users comfortable with a more manual setup.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "rocky-linux",
+                                "display_name":  "Rocky Linux",
+                                "family":  "linux",
+                                "flavor":  "Enterprise",
+                                "category":  "server_like",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://rockylinux.org/download",
+                                "official_release_page":  "https://rockylinux.org/news",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Enterprise-style Linux guest that can work here, though it is not the strongest default desktop fit.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "freebsd",
+                                "display_name":  "FreeBSD",
+                                "family":  "bsd",
+                                "flavor":  "BSD",
+                                "category":  "unix_like",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.freebsd.org/where/",
+                                "official_release_page":  "https://www.freebsd.org/releases/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Advanced Unix-like guest better suited to technical or lab-oriented VM use than to a default everyday desktop VM.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "kali-linux",
+                                "display_name":  "Kali Linux",
+                                "family":  "linux",
+                                "flavor":  "Security",
+                                "category":  "security_lab",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.kali.org/get-kali/",
+                                "official_release_page":  "https://www.kali.org/releases/",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Security-focused guest best suited to specialist lab use rather than a default desktop VM.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
+                                "id":  "windows-11",
+                                "display_name":  "Windows 11",
+                                "family":  "windows",
+                                "flavor":  "Standard",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.microsoft.com/software-download/windows11",
+                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information",
+                                "compatibility_label":  "not_recommended",
+                                "fit_reason":  "Secure Boot is required for this guest but was not confirmed.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  null,
+                                "notes":  [
+
+                                          ]
+                            }
+                        ]
+}

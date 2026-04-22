@@ -1,0 +1,32 @@
+﻿Windows-VM-Advisor - VM Readiness
+=================================
+
+Takeaway: This PC is ready for practical VM use. Linux Mint is the clearest overall fit.
+
+State: OK
+Headline: This PC is ready for practical VM use, with Linux guests as the clearest first picks.
+Why this result: Linux Mint is the clearest overall fit, while several other practical guests also make sense.
+
+Storage at a glance:
+- System drive pressure: OK - 120,0 GB is free on the system drive.
+- Overall VM storage availability: OK - Preferred VM storage: D: (SSD, 320,0 GB free).
+
+Current blockers:
+- None
+
+Current limitations:
+- None
+
+Detailed checks:
+- CPU virtualization support: OK - Hardware virtualization extensions were detected.
+- Firmware virtualization state: OK - Hardware virtualization appears to be enabled in BIOS or UEFI.
+- Second Level Address Translation (SLAT): OK - SLAT support was detected.
+- Host RAM capacity: OK - 12,0 GB of RAM leaves room for practical VM use.
+- System drive pressure: OK - 120,0 GB is free on the system drive.
+- VM storage availability: OK - Preferred VM storage: D: (SSD, 320,0 GB free).
+- Hyper-V: OK - Hyper-V is disabled.
+- Memory Integrity: OK - Memory Integrity is disabled.
+- Boot mode: OK - Detected boot mode: UEFI.
+- Secure Boot: Info - Secure Boot is not enabled or could not be confirmed.
+- TPM readiness: Info - TPM 2.0 was not confirmed.
+- Device Guard detection: OK - Device Guard information was detected.

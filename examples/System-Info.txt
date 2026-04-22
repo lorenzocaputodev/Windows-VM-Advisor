@@ -1,0 +1,19 @@
+﻿Windows-VM-Advisor - System Information
+=======================================
+
+Operating system: Windows 10 Pro 22H2 (Build 19045, 64-bit)
+Processor: AMD Ryzen 5 3600
+CPU layout: 6 cores, 12 threads, up to 4200 MHz
+Virtualization support: Yes | Firmware enabled: Yes | SLAT: Yes
+Memory: 12,0 GB total, 6,5 GB free across 2 module(s)
+System drive: C: (NTFS), 512,0 GB total, 120,0 GB free, SSD
+Firmware: UEFI
+Secure Boot: Disabled
+TPM: Not confirmed | Version Unknown
+Hypervisors: VMware Workstation not detected | Oracle VirtualBox not detected
+Windows safeguards: Hyper-V Disabled; Memory Integrity Disabled; Device Guard Detected
+
+Storage overview:
+- C: [System] | NTFS, 512,0 GB total, 120,0 GB free, SSD, VM storage fit: Usable, but not ideal for VM files
+- D: | NTFS, 1000,0 GB total, 320,0 GB free, SSD, VM storage fit: Preferred for VM files
+Best place for VM files: D: (SSD, 320,0 GB free)

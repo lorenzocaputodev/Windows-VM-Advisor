@@ -1,0 +1,37 @@
+﻿Windows-VM-Advisor - ISO Recommendations
+========================================
+
+Best-fit guidance:
+- Best overall fit: Linux Mint
+- Best lightweight option: Debian Stable
+- Best Windows option: Windows 10
+
+Best choices:
+- Linux Mint [Recommended]
+   Balanced desktop Linux choice for moderate hardware.
+- Ubuntu LTS [Recommended]
+   Mainstream and broadly supported Linux guest for general VM use.
+- Windows 10 [Recommended]
+   Most forgiving Windows desktop option for broader host compatibility.
+
+Usable, but less ideal:
+- Debian Stable [Possible]
+   Efficient Linux choice, but it fits best when the VM stays modest.
+- Lubuntu [Possible]
+   Very light Linux desktop that still works here with modest VM settings.
+- Fedora Workstation [Possible]
+   Modern Linux desktop that stays workable here, but it is not the most conservative fit.
+- NixOS [Possible]
+   Advanced declarative Linux option that can work here, though it is not the simplest default desktop choice.
+- Arch Linux [Possible]
+   Advanced Linux guest that can work here, but it fits best for users comfortable with a more manual setup.
+- Rocky Linux [Possible]
+   Enterprise-style Linux guest that can work here, though it is not the strongest default desktop fit.
+- FreeBSD [Possible]
+   Advanced Unix-like guest better suited to technical or lab-oriented VM use than to a default everyday desktop VM.
+- Kali Linux [Possible]
+   Security-focused guest best suited to specialist lab use rather than a default desktop VM.
+
+Not recommended:
+- Windows 11 [Not recommended]
+   Secure Boot is required for this guest but was not confirmed.

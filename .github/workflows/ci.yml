@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Bootstrap test dependencies
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-dev.ps1
+
+      - name: Run test suite
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\run-tests.ps1

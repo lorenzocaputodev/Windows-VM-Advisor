@@ -1,0 +1,393 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Windows-VM-Advisor Details Report",
+  "type": "object",
+  "required": [
+    "tool_version",
+    "generated_at",
+    "inputs",
+    "system_information",
+    "vm_readiness",
+    "recommendations"
+  ],
+  "properties": {
+    "tool_version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "inputs": {
+      "type": "object",
+      "required": [
+        "guest_preference",
+        "mode",
+        "usage",
+        "hypervisor_preference"
+      ],
+      "properties": {
+        "guest_preference": {
+          "enum": [
+            "auto",
+            "windows",
+            "linux"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "light",
+            "balanced",
+            "performance"
+          ]
+        },
+        "usage": {
+          "enum": [
+            "general_testing",
+            "office",
+            "dev"
+          ]
+        },
+        "hypervisor_preference": {
+          "enum": [
+            "auto",
+            "vmware",
+            "virtualbox"
+          ]
+        }
+      }
+    },
+    "system_information": {
+      "type": "object",
+      "required": [
+        "os",
+        "cpu",
+        "memory",
+        "storage",
+        "firmware",
+        "tpm",
+        "hypervisors",
+        "windows_features",
+        "notes"
+      ],
+      "properties": {
+        "os": {
+          "type": "object",
+          "required": [
+            "name",
+            "version",
+            "build",
+            "architecture"
+          ],
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "build": { "type": "string" },
+            "architecture": { "type": "string" }
+          }
+        },
+        "cpu": {
+          "type": "object",
+          "required": [
+            "model",
+            "manufacturer",
+            "cores",
+            "threads",
+            "max_clock_mhz",
+            "virtualization_supported",
+            "virtualization_enabled_in_firmware",
+            "slat_supported"
+          ],
+          "properties": {
+            "model": { "type": "string" },
+            "manufacturer": { "type": "string" },
+            "cores": { "type": "integer" },
+            "threads": { "type": "integer" },
+            "max_clock_mhz": { "type": "integer" },
+            "virtualization_supported": { "type": "boolean" },
+            "virtualization_enabled_in_firmware": { "type": "boolean" },
+            "slat_supported": { "type": "boolean" }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "required": [
+            "total_gb",
+            "free_gb",
+            "module_count"
+          ],
+          "properties": {
+            "total_gb": { "type": "number" },
+            "free_gb": { "type": "number" },
+            "module_count": { "type": "integer" }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "required": [
+            "system_drive",
+            "system_drive_fs",
+            "system_drive_total_gb",
+            "system_drive_free_gb",
+            "physical_media_hint",
+            "drives",
+            "preferred_vm_storage"
+          ],
+          "properties": {
+            "system_drive": { "type": "string" },
+            "system_drive_fs": { "type": "string" },
+            "system_drive_total_gb": { "type": "number" },
+            "system_drive_free_gb": { "type": "number" },
+            "physical_media_hint": { "type": "string" },
+            "drives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "drive_letter",
+                  "is_system_drive",
+                  "filesystem",
+                  "total_gb",
+                  "free_gb",
+                  "storage_type_hint",
+                  "vm_storage_suitable"
+                ],
+                "properties": {
+                  "drive_letter": { "type": "string" },
+                  "is_system_drive": { "type": "boolean" },
+                  "filesystem": { "type": "string" },
+                  "total_gb": { "type": "number" },
+                  "free_gb": { "type": "number" },
+                  "storage_type_hint": { "type": "string" },
+                  "vm_storage_suitable": { "type": "boolean" }
+                }
+              }
+            },
+            "preferred_vm_storage": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "drive_letter",
+                    "is_system_drive",
+                    "filesystem",
+                    "total_gb",
+                    "free_gb",
+                    "storage_type_hint",
+                    "vm_storage_suitable"
+                  ],
+                  "properties": {
+                    "drive_letter": { "type": "string" },
+                    "is_system_drive": { "type": "boolean" },
+                    "filesystem": { "type": "string" },
+                    "total_gb": { "type": "number" },
+                    "free_gb": { "type": "number" },
+                    "storage_type_hint": { "type": "string" },
+                    "vm_storage_suitable": { "type": "boolean" }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "firmware": {
+          "type": "object",
+          "required": [
+            "boot_mode",
+            "secure_boot"
+          ],
+          "properties": {
+            "boot_mode": { "type": "string" },
+            "secure_boot": { "type": "boolean" }
+          }
+        },
+        "tpm": {
+          "type": "object",
+          "required": [
+            "present",
+            "ready",
+            "version"
+          ],
+          "properties": {
+            "present": { "type": "boolean" },
+            "ready": { "type": "boolean" },
+            "version": { "type": "string" }
+          }
+        },
+        "hypervisors": {
+          "type": "object",
+          "required": [
+            "vmware_workstation_installed",
+            "virtualbox_installed"
+          ],
+          "properties": {
+            "vmware_workstation_installed": { "type": "boolean" },
+            "virtualbox_installed": { "type": "boolean" }
+          }
+        },
+        "windows_features": {
+          "type": "object",
+          "required": [
+            "hyperv_enabled",
+            "memory_integrity_enabled",
+            "device_guard_available"
+          ],
+          "properties": {
+            "hyperv_enabled": { "type": "boolean" },
+            "memory_integrity_enabled": { "type": "boolean" },
+            "device_guard_available": { "type": "boolean" }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "vm_readiness": {
+      "type": "object",
+      "required": [
+        "state",
+        "takeaway",
+        "headline",
+        "primary_reason",
+        "blockers",
+        "limitations",
+        "checks"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "ok",
+            "limited",
+            "not_ready"
+          ]
+        },
+        "takeaway": { "type": "string" },
+        "headline": { "type": "string" },
+        "primary_reason": { "type": "string" },
+        "blockers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "limitations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "status",
+              "details"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "status": {
+                "enum": [
+                  "ok",
+                  "warning",
+                  "blocked",
+                  "info"
+                ]
+              },
+              "details": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "family",
+          "flavor",
+          "category",
+          "architecture",
+          "official_download_page",
+          "official_release_page",
+          "compatibility_label",
+          "fit_reason",
+          "preferred_hypervisor",
+          "vm_profile",
+          "notes"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "display_name": { "type": "string" },
+          "family": {
+            "enum": [
+              "windows",
+              "linux"
+            ]
+          },
+          "flavor": { "type": "string" },
+          "category": { "type": "string" },
+          "architecture": { "type": "string" },
+          "official_download_page": {
+            "type": "string",
+            "format": "uri"
+          },
+          "official_release_page": {
+            "type": "string",
+            "format": "uri"
+          },
+          "compatibility_label": {
+            "enum": [
+              "recommended",
+              "possible",
+              "not_recommended"
+            ]
+          },
+          "fit_reason": { "type": "string" },
+          "preferred_hypervisor": { "type": "string" },
+          "vm_profile": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "vcpu",
+                  "memory_mb",
+                  "disk_gb",
+                  "firmware",
+                  "secure_boot",
+                  "tpm",
+                  "network",
+                  "storage_location"
+                ],
+                "properties": {
+                  "vcpu": { "type": "integer" },
+                  "memory_mb": { "type": "integer" },
+                  "disk_gb": { "type": "integer" },
+                  "firmware": { "type": "string" },
+                  "secure_boot": { "type": "boolean" },
+                  "tpm": { "type": "boolean" },
+                  "network": { "type": "string" },
+                  "storage_location": { "type": "string" }
+                }
+              }
+            ]
+          },
+          "notes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
