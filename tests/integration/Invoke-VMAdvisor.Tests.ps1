@@ -68,7 +68,12 @@ Describe 'Windows-VM-Advisor integration' {
         ($output.Contains('VM Profiles')) | Should -BeFalse
         ($output.Contains('RESULTS_PATH:')) | Should -BeFalse
         ($output.Contains('Results folder:')) | Should -BeFalse
-        ($output.Contains($latestRoot)) | Should -BeTrue
+        $resultsPathMatch = [regex]::Match($output, '(?ms)^Results Path\r?\n-+\r?\n\r?\n(?<path>[^\r\n]+)\r?$')
+        $resultsPathMatch.Success | Should -BeTrue
+        $reportedResultsPath = $resultsPathMatch.Groups['path'].Value
+        $normalizedExpected = [IO.Path]::GetFullPath($latestRoot).Trim().TrimEnd('\', '/')
+        $normalizedActual = [IO.Path]::GetFullPath($reportedResultsPath.Trim()).Trim().TrimEnd('\', '/')
+        ($normalizedActual.ToLowerInvariant() -eq $normalizedExpected.ToLowerInvariant()) | Should -BeTrue
         # The old text formatter repeated the readiness takeaway here even though it already appears in console output and VM-Readiness.txt.
         ($isoRecommendationsText.Contains('Takeaway:')) | Should -BeFalse
         if ($recommendedCount -gt 0) {
