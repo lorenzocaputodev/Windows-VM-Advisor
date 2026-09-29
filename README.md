@@ -4,11 +4,10 @@
 
 # Windows-VM-Advisor
 
-A lightweight Windows tool that inspects the current PC, evaluates virtualization readiness, ranks practical guest OS options, and generates clear result files for manual VM setup in **VMware Workstation** or **Oracle VirtualBox**.
+[![CI](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## ✨ Overview
-
-Windows-VM-Advisor is built for one clear job and it stays local, deterministic, and focused.
+A lightweight Windows tool that inspects the current PC, evaluates virtualization readiness, ranks practical guest OS options, and generates clear result files for manual VM setup in **VMware Workstation** or **Oracle VirtualBox**. It runs fully locally, and rankings depend only on the hardware, not on what is running at the moment.
 
 ---
 
@@ -25,11 +24,10 @@ Windows-VM-Advisor is built for one clear job and it stays local, deterministic,
 
 ## 🚀 Quick start
 
-For best results, run as administrator:
+**Requirements:** Windows 10 or 11 (x64) with the built-in Windows PowerShell 5.1. Nothing to install.
 
-```text
-Windows-VM-Advisor.bat
-```
+1. Download the repository as a ZIP (or `git clone` it) and extract it.
+2. Run `Windows-VM-Advisor.bat`, ideally as administrator. Without elevation some checks (TPM, Hyper-V state) cannot be verified and the report says so.
 
 You can also launch it from PowerShell:
 
@@ -39,9 +37,10 @@ You can also launch it from PowerShell:
 
 ### Public options
 
-- `-Guest auto|windows|linux`
-- `-Mode light|balanced|performance`
-- `-Hypervisor auto|vmware|virtualbox`
+- `-Guest auto|windows|linux` — bias the ranking toward a guest family (default `auto`)
+- `-Mode light|balanced|performance` — how generous the suggested VM profiles are (default `balanced`)
+- `-Hypervisor auto|vmware|virtualbox` — preferred hypervisor; the tool falls back to the other one if yours is blocked or clearly worse (default `auto`)
+- `-ResultsRoot <path>` — where to write results
 
 ### Examples
 
@@ -87,6 +86,8 @@ Each run generates:
 - `VM-Profiles.txt` — suggested starting VM settings for usable guests
 - `Details.json` — stable machine-readable output
 
+Sample files for all five outputs are in [`examples/`](examples/).
+
 ---
 
 ## 🖥️ Supported hypervisors
@@ -99,7 +100,7 @@ Each run generates:
 ## 💿 Supported guest catalog
 
 ### Windows
-- Windows 10
+- Windows 10 (end of support since October 2025, never ranked above *Possible*)
 - Windows 11
 
 ### Linux
@@ -169,12 +170,14 @@ Further technical documentation:
 - `Windows-VM-Advisor.bat` — main launcher for Windows users
 - `src/entrypoints/Start-Windows-VM-Advisor.ps1` — internal PowerShell entrypoint
 - `src/` — collectors, rules, catalog, output formatters, utilities, and internal CLI
-- `scripts/` — bootstrap, test, and validation helpers
+- `scripts/` — bootstrap, test, lint, validation, and catalog link-check helpers
 - `tests/` — unit and integration tests
 - `schemas/` — JSON schema for `Details.json`
 - `examples/` — sample output files
 - `docs/` — technical documentation
 - `.github/workflows/` — CI workflow
+- `CHANGELOG.md` — release notes
+- `LICENSE` — MIT
 
 ---
 
@@ -190,7 +193,7 @@ It is a focused assessment tool for answering three practical questions:
 
 ---
 
-## 🤖 **Notes**
+## 🤖 AI assistance
 
 This project was designed and refined by me, with targeted AI support in selected phases such as code review, refactoring, copy polishing, and visual or technical refinement.
 
