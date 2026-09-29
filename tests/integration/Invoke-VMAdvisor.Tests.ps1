@@ -1,6 +1,7 @@
 Describe 'Windows-VM-Advisor integration' {
     BeforeAll {
-        $canonicalVersion = '1.0.0'
+        . (Join-Path $PSScriptRoot '..\..\src\core\util\Get-ToolVersion.ps1')
+        $canonicalVersion = Get-ToolVersion
     }
 
     It 'writes archive and latest results from the PowerShell entrypoint' {
@@ -105,8 +106,17 @@ Describe 'Windows-VM-Advisor integration' {
         if ($output.Contains('VM settings are listed in VM-Profiles.txt')) {
             ($output -match "(?s)Top Recommendations.*(?:- Full blocked list is in ISO-Recommendations\.txt\r?\n)?\r?\nVM settings are listed in VM-Profiles\.txt") | Should -BeTrue
         }
-        if ((@($report.recommendations | Where-Object { $_.id -eq 'windows-10' }).Count -gt 0) -and (@($report.recommendations | Where-Object { $_.id -eq 'windows-11' }).Count -gt 0)) {
-            (@($report.recommendations | Select-Object -ExpandProperty id).IndexOf('windows-10')) | Should -BeLessThan (@($report.recommendations | Select-Object -ExpandProperty id).IndexOf('windows-11'))
+        $windows10Entry = @($report.recommendations | Where-Object { $_.id -eq 'windows-10' })[0]
+        $windows11Entry = @($report.recommendations | Where-Object { $_.id -eq 'windows-11' })[0]
+        if ($windows10Entry -and $windows11Entry) {
+            $windowsIds = @($report.recommendations | Select-Object -ExpandProperty id)
+            $windowsLabelRank = @{ recommended = 3; possible = 2; not_recommended = 1 }
+            $windows10Rank = $windowsLabelRank[[string]$windows10Entry.compatibility_label]
+            $windows11Rank = $windowsLabelRank[[string]$windows11Entry.compatibility_label]
+            # Windows 10 is only forced ahead when its label is better, or on a limited host where it is the lighter option.
+            if (($windows10Rank -gt $windows11Rank) -or (($windows10Rank -eq $windows11Rank) -and ($report.vm_readiness.state -eq 'limited'))) {
+                $windowsIds.IndexOf('windows-10') | Should -BeLessThan $windowsIds.IndexOf('windows-11')
+            }
         }
         if ((@($report.recommendations | Where-Object { $_.id -eq 'freebsd' }).Count -gt 0)) {
             (@($report.recommendations | Where-Object { $_.id -eq 'freebsd' } | Select-Object -First 1).family) | Should -Be 'bsd'
@@ -148,7 +158,7 @@ Describe 'Windows-VM-Advisor integration' {
         $scriptPath = Join-Path $projectRoot 'Windows-VM-Advisor.bat'
         $resultsRoot = Join-Path $env:TEMP ('windows-vm-advisor-bat-' + [guid]::NewGuid().ToString('N'))
 
-        $output = & cmd.exe /c ('(echo N& echo.) | "{0}" -Guest linux -Mode performance -ResultsRoot "{1}"' -f $scriptPath, $resultsRoot) | Out-String
+        $output = & cmd.exe /c ('(echo N& echo.) | "{0}" -Guest linux -Mode performance -Hypervisor virtualbox -ResultsRoot "{1}"' -f $scriptPath, $resultsRoot) | Out-String
         $exitCode = $LASTEXITCODE
         $latestRoot = Join-Path $resultsRoot 'latest'
 
@@ -162,5 +172,6 @@ Describe 'Windows-VM-Advisor integration' {
         $report = Get-Content -Raw (Join-Path $latestRoot 'Details.json') | ConvertFrom-Json
         ($report.inputs.guest_preference -eq 'linux') | Should -BeTrue
         ($report.inputs.mode -eq 'performance') | Should -BeTrue
+        ($report.inputs.hypervisor_preference -eq 'virtualbox') | Should -BeTrue
     }
 }

@@ -1,5 +1,5 @@
 ﻿{
-    "tool_version":  "1.0.0",
+    "tool_version":  "1.1.0",
     "generated_at":  "2026-04-21T00:00:00Z",
     "inputs":  {
                    "guest_preference":  "auto",

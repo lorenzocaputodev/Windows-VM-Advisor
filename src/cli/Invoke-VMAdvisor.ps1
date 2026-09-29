@@ -21,47 +21,14 @@ $ErrorActionPreference = 'Stop'
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent (Split-Path -Parent $scriptRoot)
 
-$paths = @(
-    'src\core\util\Convert-ToRoundedGigabytes.ps1',
-    'src\core\util\Test-CommandAvailable.ps1',
-    'src\core\util\Write-Log.ps1',
-    'src\core\util\Test-IsAdmin.ps1',
-    'src\core\util\Get-SafeCimInstance.ps1',
-    'src\core\util\Get-SafeCimAssociatedInstance.ps1',
-    'src\core\util\Get-SafeRegistryValue.ps1',
-    'src\core\util\Get-SafeRegistryItemProperties.ps1',
-    'src\core\util\Get-SafeWindowsOptionalFeatureState.ps1',
-    'src\core\util\Invoke-SafeNativeCommand.ps1',
-    'src\core\util\Resolve-BootMode.ps1',
-    'src\core\catalog\Get-IsoCatalog.ps1',
-    'src\core\collectors\Get-WindowsHostInfo.ps1',
-    'src\core\collectors\Get-CPUInfo.ps1',
-    'src\core\collectors\Get-RAMInfo.ps1',
-    'src\core\collectors\Get-DiskInfo.ps1',
-    'src\core\collectors\Get-FirmwareInfo.ps1',
-    'src\core\collectors\Get-TPMInfo.ps1',
-    'src\core\collectors\Get-VirtualizationInfo.ps1',
-    'src\core\collectors\Get-HypervisorInfo.ps1',
-    'src\core\rules\Test-Windows11Suitability.ps1',
-    'src\core\rules\Test-VirtualBoxSuitability.ps1',
-    'src\core\rules\Test-VMwareSuitability.ps1',
-    'src\core\rules\Get-AdvisorThresholds.ps1',
-    'src\core\rules\Get-PreferredVMStorage.ps1',
-    'src\core\rules\Get-StorageProfile.ps1',
-    'src\core\rules\Get-VMReadiness.ps1',
-    'src\core\rules\Get-IsoRecommendations.ps1',
-    'src\core\rules\Get-Recommendation.ps1',
-    'src\core\output\ConvertTo-AdvisorJson.ps1',
-    'src\core\output\ConvertTo-SystemInfoText.ps1',
-    'src\core\output\ConvertTo-VMReadinessText.ps1',
-    'src\core\output\ConvertTo-IsoRecommendationsText.ps1',
-    'src\core\output\ConvertTo-VMProfilesText.ps1',
-    'src\core\output\Get-BestFitGuidance.ps1',
-    'src\core\output\ConvertTo-UserConsoleSummary.ps1'
+$coreRoot = Join-Path $projectRoot 'src\core'
+$corePaths = @(
+    Get-ChildItem -LiteralPath $coreRoot -Filter '*.ps1' -File -Recurse |
+    Sort-Object -Property FullName
 )
 
-foreach ($relativePath in $paths) {
-    . (Join-Path $projectRoot $relativePath)
+foreach ($corePath in $corePaths) {
+    . $corePath.FullName
 }
 
 function Write-InternalLog {
@@ -104,7 +71,10 @@ $hostProfile = [pscustomobject]@{
     }
     memory   = $ramInfo
     storage  = $diskInfo
-    firmware = $firmwareInfo
+    firmware = [pscustomobject]@{
+        boot_mode   = $firmwareInfo.boot_mode
+        secure_boot = [bool]$firmwareInfo.secure_boot
+    }
     security = $tpmInfo
 }
 
@@ -123,6 +93,10 @@ $resolvedOutputDir = (Resolve-Path $OutputDir).Path
 $systemNotes = New-Object System.Collections.Generic.List[string]
 if (-not (Test-IsAdmin)) {
     $systemNotes.Add('This run was not elevated, so some Windows feature checks may be incomplete.')
+}
+
+if (-not $hypervisorInfo.hyperv_state_verified) {
+    $systemNotes.Add('The Hyper-V feature state could not be verified, so it is reported as disabled.')
 }
 
 $systemInformation = [pscustomobject]@{
@@ -149,7 +123,7 @@ $systemInformation = [pscustomobject]@{
 }
 
 $assessment = Get-Recommendation -HostProfile $hostProfile -HypervisorProfile $hypervisorInfo -UserGoal $userGoal
-$toolVersion = '1.0.0'
+$toolVersion = Get-ToolVersion
 
 $report = [pscustomobject]@{
     tool_version       = $toolVersion
