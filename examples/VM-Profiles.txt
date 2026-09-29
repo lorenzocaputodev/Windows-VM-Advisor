@@ -4,6 +4,12 @@
 Use these settings as a practical starting point. Increase them only if needed.
 
 Best choices:
+- Windows 11 [Recommended]
+   Hypervisor: VMware Workstation
+   Suggested setup: 4 vCPU, 8192 MB RAM, 100 GB disk, UEFI, Secure Boot Enabled, TPM Yes, Network NAT
+   Save VM files on: D:
+   Notes: Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.; Enable the virtual TPM and Secure Boot in the hypervisor VM settings; the host TPM is not required.
+
 - Linux Mint [Recommended]
    Hypervisor: VMware Workstation
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
@@ -12,11 +18,6 @@ Best choices:
 - Ubuntu LTS [Recommended]
    Hypervisor: VMware Workstation
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
-   Save VM files on: D:
-
-- Windows 10 [Recommended]
-   Hypervisor: VMware Workstation
-   Suggested setup: 2 vCPU, 6144 MB RAM, 80 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
    Save VM files on: D:
 
 Usable, but less ideal:
@@ -35,6 +36,11 @@ Usable, but less ideal:
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
    Save VM files on: D:
 
+- openSUSE Leap [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+
 - NixOS [Possible]
    Hypervisor: VMware Workstation
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
@@ -45,10 +51,17 @@ Usable, but less ideal:
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
    Save VM files on: D:
 
+- Windows 10 [Possible]
+   Hypervisor: VMware Workstation
+   Suggested setup: 2 vCPU, 6144 MB RAM, 80 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
+   Save VM files on: D:
+   Notes: Windows 10 reached end of support on 14 October 2025. Free security updates have ended and only paid Extended Security Updates remain, so use it only for isolated testing or legacy software.
+
 - Rocky Linux [Possible]
    Hypervisor: VMware Workstation
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
    Save VM files on: D:
+   Notes: Rocky Linux 10 needs a CPU with x86-64-v3 support (roughly Intel Haswell or AMD Zen and newer). On VirtualBox use version 7.2.10 or later.
 
 - FreeBSD [Possible]
    Hypervisor: VMware Workstation
@@ -59,3 +72,4 @@ Usable, but less ideal:
    Hypervisor: VMware Workstation
    Suggested setup: 2 vCPU, 4096 MB RAM, 48 GB disk, UEFI, Secure Boot Disabled, TPM No, Network NAT
    Save VM files on: D:
+   Notes: Kali publishes ready-made VMware and VirtualBox images; importing one is faster than installing from the ISO.

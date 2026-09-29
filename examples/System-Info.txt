@@ -3,7 +3,7 @@
 
 Operating system: Windows 10 Pro 22H2 (Build 19045, 64-bit)
 Processor: AMD Ryzen 5 3600
-CPU layout: 6 cores, 12 threads, up to 4200 MHz
+CPU layout: 6 cores, 12 threads, reported max clock 4200 MHz
 Virtualization support: Yes | Firmware enabled: Yes | SLAT: Yes
 Memory: 12,0 GB total, 6,5 GB free across 2 module(s)
 System drive: C: (NTFS), 512,0 GB total, 120,0 GB free, SSD

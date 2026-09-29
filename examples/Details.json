@@ -89,8 +89,8 @@
                            },
     "vm_readiness":  {
                          "state":  "ok",
-                         "headline":  "This PC is ready for practical VM use, with Linux guests as the clearest first picks.",
-                         "primary_reason":  "Linux Mint is the clearest overall fit, while several other practical guests also make sense.",
+                         "headline":  "This PC is ready for practical VM use, and stronger Windows guests remain a realistic fit.",
+                         "primary_reason":  "Windows 11 is the clearest overall fit, with other mainstream guests still in range.",
                          "blockers":  [
 
                                       ],
@@ -98,6 +98,12 @@
 
                                          ],
                          "checks":  [
+                                        {
+                                            "id":  "host-architecture",
+                                            "label":  "Host architecture",
+                                            "status":  "ok",
+                                            "details":  "Detected host architecture: 64-bit."
+                                        },
                                         {
                                             "id":  "hardware-virtualization",
                                             "label":  "CPU virtualization support",
@@ -171,9 +177,37 @@
                                             "details":  "Device Guard information was detected."
                                         }
                                     ],
-                         "takeaway":  "This PC is ready for practical VM use. Linux Mint is the clearest overall fit."
+                         "takeaway":  "This PC is ready for practical VM use. Windows 11 is the clearest overall fit."
                      },
     "recommendations":  [
+                            {
+                                "id":  "windows-11",
+                                "display_name":  "Windows 11",
+                                "family":  "windows",
+                                "flavor":  "Standard",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.microsoft.com/software-download/windows11",
+                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information",
+                                "compatibility_label":  "recommended",
+                                "fit_reason":  "Newer Windows desktop option that expects a more comfortable host setup.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  4,
+                                                   "memory_mb":  8192,
+                                                   "disk_gb":  100,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  true,
+                                                   "tpm":  true,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest.",
+                                              "Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.",
+                                              "Enable the virtual TPM and Secure Boot in the hypervisor VM settings; the host TPM is not required."
+                                          ]
+                            },
                             {
                                 "id":  "linux-mint",
                                 "display_name":  "Linux Mint",
@@ -216,32 +250,6 @@
                                                    "vcpu":  2,
                                                    "memory_mb":  4096,
                                                    "disk_gb":  48,
-                                                   "firmware":  "UEFI",
-                                                   "secure_boot":  false,
-                                                   "tpm":  false,
-                                                   "network":  "NAT",
-                                                   "storage_location":  "D:"
-                                               },
-                                "notes":  [
-                                              "Use D: as the preferred VM storage location for this guest."
-                                          ]
-                            },
-                            {
-                                "id":  "windows-10",
-                                "display_name":  "Windows 10",
-                                "family":  "windows",
-                                "flavor":  "Standard",
-                                "category":  "desktop",
-                                "architecture":  "x64",
-                                "official_download_page":  "https://www.microsoft.com/software-download/windows10",
-                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/release-information",
-                                "compatibility_label":  "recommended",
-                                "fit_reason":  "Most forgiving Windows desktop option for broader host compatibility.",
-                                "preferred_hypervisor":  "VMware Workstation",
-                                "vm_profile":  {
-                                                   "vcpu":  2,
-                                                   "memory_mb":  6144,
-                                                   "disk_gb":  80,
                                                    "firmware":  "UEFI",
                                                    "secure_boot":  false,
                                                    "tpm":  false,
@@ -331,6 +339,32 @@
                                           ]
                             },
                             {
+                                "id":  "opensuse-leap",
+                                "display_name":  "openSUSE Leap",
+                                "family":  "linux",
+                                "flavor":  "KDE Plasma",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://get.opensuse.org/leap/",
+                                "official_release_page":  "https://en.opensuse.org/Portal:Leap",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Stable KDE Plasma desktop that stays workable here, though it is not the most conservative fit.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  4096,
+                                                   "disk_gb":  48,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest."
+                                          ]
+                            },
+                            {
                                 "id":  "nixos",
                                 "display_name":  "NixOS",
                                 "family":  "linux",
@@ -383,6 +417,33 @@
                                           ]
                             },
                             {
+                                "id":  "windows-10",
+                                "display_name":  "Windows 10",
+                                "family":  "windows",
+                                "flavor":  "Standard",
+                                "category":  "desktop",
+                                "architecture":  "x64",
+                                "official_download_page":  "https://www.microsoft.com/software-download/windows10",
+                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/release-information",
+                                "compatibility_label":  "possible",
+                                "fit_reason":  "Most forgiving Windows desktop option here, but it should start modestly.",
+                                "preferred_hypervisor":  "VMware Workstation",
+                                "vm_profile":  {
+                                                   "vcpu":  2,
+                                                   "memory_mb":  6144,
+                                                   "disk_gb":  80,
+                                                   "firmware":  "UEFI",
+                                                   "secure_boot":  false,
+                                                   "tpm":  false,
+                                                   "network":  "NAT",
+                                                   "storage_location":  "D:"
+                                               },
+                                "notes":  [
+                                              "Use D: as the preferred VM storage location for this guest.",
+                                              "Windows 10 reached end of support on 14 October 2025. Free security updates have ended and only paid Extended Security Updates remain, so use it only for isolated testing or legacy software."
+                                          ]
+                            },
+                            {
                                 "id":  "rocky-linux",
                                 "display_name":  "Rocky Linux",
                                 "family":  "linux",
@@ -405,7 +466,8 @@
                                                    "storage_location":  "D:"
                                                },
                                 "notes":  [
-                                              "Use D: as the preferred VM storage location for this guest."
+                                              "Use D: as the preferred VM storage location for this guest.",
+                                              "Rocky Linux 10 needs a CPU with x86-64-v3 support (roughly Intel Haswell or AMD Zen and newer). On VirtualBox use version 7.2.10 or later."
                                           ]
                             },
                             {
@@ -441,7 +503,7 @@
                                 "flavor":  "Security",
                                 "category":  "security_lab",
                                 "architecture":  "x64",
-                                "official_download_page":  "https://www.kali.org/get-kali/",
+                                "official_download_page":  "https://www.kali.org/get-kali/#kali-virtual-machines",
                                 "official_release_page":  "https://www.kali.org/releases/",
                                 "compatibility_label":  "possible",
                                 "fit_reason":  "Security-focused guest best suited to specialist lab use rather than a default desktop VM.",
@@ -457,24 +519,8 @@
                                                    "storage_location":  "D:"
                                                },
                                 "notes":  [
-                                              "Use D: as the preferred VM storage location for this guest."
-                                          ]
-                            },
-                            {
-                                "id":  "windows-11",
-                                "display_name":  "Windows 11",
-                                "family":  "windows",
-                                "flavor":  "Standard",
-                                "category":  "desktop",
-                                "architecture":  "x64",
-                                "official_download_page":  "https://www.microsoft.com/software-download/windows11",
-                                "official_release_page":  "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information",
-                                "compatibility_label":  "not_recommended",
-                                "fit_reason":  "Secure Boot is required for this guest but was not confirmed.",
-                                "preferred_hypervisor":  "VMware Workstation",
-                                "vm_profile":  null,
-                                "notes":  [
-
+                                              "Use D: as the preferred VM storage location for this guest.",
+                                              "Kali publishes ready-made VMware and VirtualBox images; importing one is faster than installing from the ISO."
                                           ]
                             }
                         ]
