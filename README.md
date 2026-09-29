@@ -4,7 +4,7 @@
 
 # Windows-VM-Advisor
 
-[![CI](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml) [![License](https://img.shields.io/github/license/lorenzocaputodev/Windows-VM-Advisor)](LICENSE) ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4) ![PowerShell](https://img.shields.io/badge/PowerShell-5.1-5391FE)
+[![CI](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenzocaputodev/Windows-VM-Advisor/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/lorenzocaputodev/Windows-VM-Advisor)](https://github.com/lorenzocaputodev/Windows-VM-Advisor/releases/latest) [![License](https://img.shields.io/github/license/lorenzocaputodev/Windows-VM-Advisor)](LICENSE) ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4) ![PowerShell](https://img.shields.io/badge/PowerShell-5.1-5391FE)
 
 A lightweight Windows tool that inspects the current PC, evaluates virtualization readiness, ranks practical guest OS options, and generates clear result files for manual VM setup in **VMware Workstation** or **Oracle VirtualBox**. It runs fully locally, and rankings depend only on the hardware, not on what is running at the moment.
 
