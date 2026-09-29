@@ -41,6 +41,7 @@ You can also launch it from PowerShell:
 
 - `-Guest auto|windows|linux`
 - `-Mode light|balanced|performance`
+- `-Hypervisor auto|vmware|virtualbox`
 
 ### Examples
 
@@ -48,6 +49,7 @@ You can also launch it from PowerShell:
 .\Windows-VM-Advisor.bat -Guest auto -Mode balanced
 .\Windows-VM-Advisor.bat -Guest linux -Mode performance
 .\Windows-VM-Advisor.bat -Guest windows -Mode light
+.\Windows-VM-Advisor.bat -Hypervisor virtualbox
 ```
 
 ### Advanced usage
@@ -70,6 +72,8 @@ A successful run writes results to:
 
 - `Results\latest\`
 - `Results\archive\YYYYMMDD-HHMMSS\`
+
+If the project folder is read-only (for example under `Program Files`), results go to `%LOCALAPPDATA%\Windows-VM-Advisor\Results` instead. Use `-ResultsRoot` to choose another location.
 
 ---
 
@@ -120,7 +124,7 @@ Each run generates:
 
 - It does not download ISOs
 - It does not create or modify VMs
-- It targets **Windows hosts only**
+- It targets **x64 Windows hosts only** (ARM and 32-bit hosts are reported as not ready)
 - Rankings are local and deterministic, not based on live popularity or download data
 - Detection quality may be reduced on restricted systems or when some Windows commands are unavailable
 
@@ -138,6 +142,12 @@ Run the test suite:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run-tests.ps1
+```
+
+Lint the source with PSScriptAnalyzer (requires `Install-Module PSScriptAnalyzer -Scope CurrentUser`):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run-lint.ps1
 ```
 
 Validate the sample output contract:

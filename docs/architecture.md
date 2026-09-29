@@ -54,6 +54,16 @@ Separate formatters produce:
 - `Details.json`
 - the compact console summary
 
+`src\core\output\Publish-AdvisorResults.ps1` resolves the results location, creates the archive folder, and publishes `latest` through a staging folder so a failed copy never leaves it empty.
+
+## Startup
+
+`src\cli\Invoke-VMAdvisor.ps1` dot-sources every script under `src\core` (sorted by path), so a new collector, rule, formatter, or utility is picked up without editing a load list. The tool version comes from `Get-ToolVersion` in `src\core\util`.
+
+## Unverifiable host state
+
+When a Windows check cannot be verified (for example the Hyper-V feature state without elevation), the collectors fall back to the safest boolean and the report adds an explanatory entry to `system_information.notes`. Secure Boot has a registry fallback that works without elevation.
+
 ## Design principles
 
 - Keep collectors separate from evaluation logic.

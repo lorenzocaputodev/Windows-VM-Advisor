@@ -8,11 +8,16 @@ Windows-VM-Advisor uses local, deterministic rules and a curated guest catalog. 
 
 Use `not_ready` when practical VM use is blocked, for example:
 
+- the host is ARM-based or 32-bit (the catalog only contains x64 guests)
 - hardware virtualization is not available
 - hardware virtualization is disabled in firmware
 - host RAM is below the practical desktop VM floor
 - no local fixed drive with at least `40 GB` free remains suitable for VM storage
 - no guest option remains practical after evaluating the host
+
+### RAM comparisons
+
+Windows reports less RAM than is installed because firmware and integrated graphics reserve a share of it. All host-RAM threshold checks use the nominal (rounded-up) size, so an 8 GB laptop reporting 7.6 GB counts as 8 GB. Resource caps for the guest still use the reported value.
 
 ### LIMITED
 
@@ -43,8 +48,8 @@ Use `ok` when:
 - Rocky Linux and FreeBSD remain valid specialist guests, but they usually fit lab-oriented or server-like use better than a default desktop VM.
 - Fit reasons should explain the guest’s practical role on the host, not just a resource cap.
 - Concrete host blockers should outrank role-oriented scope wording when a guest is clearly blocked by storage, RAM, firmware, or another practical host constraint.
-- Windows 10 remains the more forgiving Windows fallback.
-- Windows 11 ranks high only when UEFI, Secure Boot, TPM 2.0, RAM, and storage are favorable.
+- Windows 10 remains the more forgiving Windows fallback, but it reached end of support on 14 October 2025. It is capped at `possible` and carries a security note.
+- Windows 11 ranks high only when RAM, storage, and SLAT are favorable. The host TPM, Secure Boot, and UEFI state do not gate it, because the hypervisor provides a virtual TPM, UEFI firmware, and Secure Boot to the guest.
 - LTSC and IoT Windows variants are intentionally excluded from the main catalog to keep the product simpler and easier to understand.
 - Kali Linux stays specialist by metadata and usually remains below default desktop choices unless the surrounding host context makes it a sensible lab guest.
 - Recommended, Possible, and Not recommended should separate genuinely practical fits from second-tier or specialist options.
@@ -54,7 +59,7 @@ Use `ok` when:
 - Respect the explicit hypervisor preference when it is still practical.
 - Prefer an already installed suitable hypervisor in `auto` mode.
 - Fall back to the safer supported option when the preferred one is blocked.
-- Treat Hyper-V and Memory Integrity as a heavier penalty for VirtualBox than for VMware Workstation.
+- Treat Hyper-V and Memory Integrity as a heavier penalty for VirtualBox than for VMware Workstation. Together they lower VirtualBox to `limited` but never block it, because VirtualBox 6 and later can run on the Windows Hypervisor Platform.
 
 ## VM profile rules
 
@@ -65,7 +70,9 @@ Use `ok` when:
   - `performance` guests lean one step heavier
 - Cap vCPU to half of the host’s logical threads.
 - Cap memory against host-safe headroom while preserving a practical guest minimum.
-- Distinguish structural profile reductions from temporary operating pressure caused by currently low free RAM.
+- Current free RAM is a moment-in-time reading, so it never changes rankings, labels, or profile sizes. It only adds an advisory note to the profile and a readiness limitation that does not affect the readiness state.
+- A guest whose target RAM had to be reduced because of the host's installed RAM ranks slightly lower than one that fits as designed (light guests lose less), so lighter guests climb on small hosts.
+- When a Windows guest would leave the host less than the reserved memory, the profile carries a note to keep other applications closed.
 - Cap disk to preserve host free space.
 - Choose the best VM storage location per guest from the available local fixed drives.
 - Record profile reduction notes when the host forces a smaller starting profile.
