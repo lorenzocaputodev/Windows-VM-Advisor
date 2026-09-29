@@ -19,6 +19,9 @@
 - A report note when the Hyper-V state cannot be verified.
 - ARM and 32-bit hosts are reported as not ready, because the catalog only contains x64 guests.
 - Windows 10 is flagged as end of support (14 October 2025): capped at `possible` with a security note.
+- openSUSE Leap joins the catalog (13 guests).
+- Catalog entries can carry a `vm_note` (Rocky Linux 10 needs an x86-64-v3 CPU; Kali offers ready-made VMware and VirtualBox images) and a `strong_host_for_recommended` flag that replaces the hard-coded Fedora check.
+- Debian's description now mentions choosing Xfce or LXQt for the lightest setup.
 - A note when a Windows guest would leave the host less than the reserved memory.
 - `scripts/check-catalog-links.ps1` for manual verification of the catalog links, and a catalog integrity test.
 - PSScriptAnalyzer lint script and CI step, `.gitattributes`, and new unit tests for the changes above.

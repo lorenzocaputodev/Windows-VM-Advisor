@@ -44,8 +44,10 @@ Use `ok` when:
 - Lighter Linux options climb on constrained hosts.
 - Linux Mint and Ubuntu LTS remain the strongest mainstream Linux desktop choices.
 - Debian Stable and Lubuntu remain the clearest lightweight Linux options on tighter hosts.
-- Fedora Workstation, Arch Linux, and NixOS stay available for stronger or more technical hosts.
+- Fedora Workstation, openSUSE Leap, Arch Linux, and NixOS stay available for stronger or more technical hosts.
 - Rocky Linux and FreeBSD remain valid specialist guests, but they usually fit lab-oriented or server-like use better than a default desktop VM.
+- Fedora Workstation and openSUSE Leap reach `recommended` only on strong hosts (catalog flag `strong_host_for_recommended`).
+- A catalog entry can carry a `vm_note`, shown on its VM profile only when the guest is usable (for example the Rocky Linux 10 CPU requirement and Kali's ready-made VM images).
 - Fit reasons should explain the guest’s practical role on the host, not just a resource cap.
 - Concrete host blockers should outrank role-oriented scope wording when a guest is clearly blocked by storage, RAM, firmware, or another practical host constraint.
 - Windows 10 remains the more forgiving Windows fallback, but it reached end of support on 14 October 2025. It is capped at `possible` and carries a security note.

@@ -91,7 +91,7 @@ Sample files for all five outputs are in [`examples/`](examples/).
 
 ## 🖥️ Supported hypervisors
 
-- VMware Workstation
+- VMware Workstation (Pro is free for personal and commercial use)
 - Oracle VirtualBox
 
 ---
@@ -107,6 +107,7 @@ Sample files for all five outputs are in [`examples/`](examples/).
 - Ubuntu LTS
 - Debian Stable
 - Fedora Workstation
+- openSUSE Leap
 - Lubuntu
 - Kali Linux
 - Arch Linux
