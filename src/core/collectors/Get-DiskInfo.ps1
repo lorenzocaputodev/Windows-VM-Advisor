@@ -18,7 +18,9 @@ function Get-DiskInfo {
         if ($combined -match 'SSD|SCM|SOLID') {
             return 'SSD'
         }
-        if ($combined -match 'HDD|HARD DISK|FIXED HARD DISK|ROTATION|SATA') {
+        # Generic labels such as "SATA" or "Fixed hard disk media" are also reported for SSDs,
+        # so only explicit rotational hints classify a drive as HDD.
+        if ($combined -match 'HDD|ROTATION') {
             return 'HDD'
         }
 
@@ -42,16 +44,30 @@ function Get-DiskInfo {
                 if ($partition) {
                     $disk = Get-Disk -Number $partition.DiskNumber -ErrorAction Stop
                     if ($disk) {
-                        return Get-NormalizedStorageTypeHint -Hints @(
-                            [string]$disk.BusType,
-                            [string]$disk.MediaType,
-                            [string]$disk.FriendlyName,
-                            [string]$disk.Model
-                        )
+                        $physicalDiskHints = @()
+                        if (Test-CommandAvailable -Name 'Get-PhysicalDisk') {
+                            try {
+                                $physicalDisk = @(Get-PhysicalDisk -ErrorAction Stop | Where-Object { [string]$_.DeviceId -eq [string]$disk.Number })[0]
+                                if ($physicalDisk) {
+                                    $physicalDiskHints = @([string]$physicalDisk.MediaType, [string]$physicalDisk.BusType)
+                                }
+                            }
+                            catch {
+                                $physicalDiskHints = @()
+                            }
+                        }
+
+                        return Get-NormalizedStorageTypeHint -Hints (@(
+                                [string]$disk.BusType,
+                                [string]$disk.MediaType,
+                                [string]$disk.FriendlyName,
+                                [string]$disk.Model
+                            ) + $physicalDiskHints)
                     }
                 }
             }
             catch {
+                Write-Verbose ('Get-Partition/Get-Disk lookup failed for {0}; using CIM associations.' -f $driveLetter)
             }
         }
 

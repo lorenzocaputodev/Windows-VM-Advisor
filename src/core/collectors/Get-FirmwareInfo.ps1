@@ -16,12 +16,22 @@ function Get-FirmwareInfo {
     $bootMode = Resolve-BootMode -FirmwareType $firmwareType -ComputerInfo $computerInfo -BcdOutput $bcdOutput
 
     $secureBoot = $false
-    if ($bootMode -eq 'UEFI' -and (Test-CommandAvailable -Name 'Confirm-SecureBootUEFI')) {
-        try {
-            $secureBoot = [bool](Confirm-SecureBootUEFI -ErrorAction Stop)
+    if ($bootMode -eq 'UEFI') {
+        $secureBootConfirmed = $false
+        if (Test-CommandAvailable -Name 'Confirm-SecureBootUEFI') {
+            try {
+                $secureBoot = [bool](Confirm-SecureBootUEFI -ErrorAction Stop)
+                $secureBootConfirmed = $true
+            }
+            catch {
+                $secureBoot = $false
+            }
         }
-        catch {
-            $secureBoot = $false
+
+        # Confirm-SecureBootUEFI needs elevation; the registry state is readable without it.
+        if (-not $secureBootConfirmed) {
+            $secureBootState = Get-SafeRegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\State' -Name 'UEFISecureBootEnabled'
+            $secureBoot = ($secureBootState -eq 1)
         }
     }
 

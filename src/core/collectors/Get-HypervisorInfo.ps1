@@ -38,13 +38,15 @@ function Get-HypervisorInfo {
         }
     }
 
-    $vmwarePathCandidates = @(
-        'C:\Program Files (x86)\VMware\VMware Workstation\vmware.exe',
-        'C:\Program Files\VMware\VMware Workstation\vmware.exe'
-    )
-    $virtualBoxPathCandidates = @(
-        'C:\Program Files\Oracle\VirtualBox\VirtualBox.exe'
-    )
+    $programRoots = @(
+        $env:ProgramFiles,
+        ${env:ProgramFiles(x86)},
+        $env:ProgramW6432,
+        'C:\Program Files',
+        'C:\Program Files (x86)'
+    ) | Where-Object { $_ } | Select-Object -Unique
+    $vmwarePathCandidates = @($programRoots | ForEach-Object { [System.IO.Path]::Combine($_, 'VMware\VMware Workstation\vmware.exe') })
+    $virtualBoxPathCandidates = @($programRoots | ForEach-Object { [System.IO.Path]::Combine($_, 'Oracle\VirtualBox\VirtualBox.exe') })
 
     if (-not $vmwareInstalled) {
         $vmwareInstalled = [bool](@($vmwarePathCandidates | Where-Object { Test-Path $_ }).Count -gt 0)
@@ -54,7 +56,9 @@ function Get-HypervisorInfo {
         $virtualBoxInstalled = [bool](@($virtualBoxPathCandidates | Where-Object { Test-Path $_ }).Count -gt 0)
     }
 
-    $hyperVEnabled = (Get-SafeWindowsOptionalFeatureState -FeatureName 'Microsoft-Hyper-V-All') -eq 'Enabled'
+    $hyperVState = Get-SafeWindowsOptionalFeatureState -FeatureName 'Microsoft-Hyper-V-All'
+    $hyperVEnabled = ($hyperVState -eq 'Enabled')
+    $hyperVStateVerified = ($hyperVState -ne 'Unknown')
 
     try {
         $dg = Get-SafeCimInstance -Namespace 'root\Microsoft\Windows\DeviceGuard' -ClassName 'Win32_DeviceGuard' -First
@@ -86,6 +90,7 @@ function Get-HypervisorInfo {
         vmware_workstation_installed = $vmwareInstalled
         virtualbox_installed         = $virtualBoxInstalled
         hyperv_enabled               = $hyperVEnabled
+        hyperv_state_verified        = $hyperVStateVerified
         memory_integrity_enabled     = $memoryIntegrityEnabled
         device_guard_available       = $deviceGuardAvailable
     }

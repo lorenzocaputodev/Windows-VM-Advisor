@@ -37,6 +37,7 @@ function Get-TPMInfo {
             }
         }
         catch {
+            Write-Verbose 'Get-Tpm failed; falling back to Win32_Tpm.'
         }
     }
 
