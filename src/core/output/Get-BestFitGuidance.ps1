@@ -5,14 +5,6 @@ function Get-BestFitGuidance {
     )
 
     $recommendations = @($Report.recommendations)
-    $recommendedRecommendations = @(
-        $recommendations |
-        Where-Object { $_.compatibility_label -eq 'recommended' }
-    )
-    $possibleRecommendations = @(
-        $recommendations |
-        Where-Object { $_.compatibility_label -eq 'possible' }
-    )
     $usableRecommendations = @(
         $recommendations |
         Where-Object { $_.compatibility_label -ne 'not_recommended' }

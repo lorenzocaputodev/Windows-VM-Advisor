@@ -5,7 +5,6 @@ function ConvertTo-VMReadinessText {
     )
 
     $readiness = $Report.vm_readiness
-    $system = $Report.system_information
     $lines = New-Object System.Collections.Generic.List[string]
     $systemDriveCheck = @($readiness.checks | Where-Object { $_.id -eq 'system-drive-pressure' } | Select-Object -First 1)[0]
     $vmStorageCheck = @($readiness.checks | Where-Object { $_.id -eq 'vm-storage-availability' } | Select-Object -First 1)[0]

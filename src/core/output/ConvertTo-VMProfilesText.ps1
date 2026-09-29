@@ -34,27 +34,27 @@ function ConvertTo-VMProfilesText {
         }
 
         foreach ($recommendation in $groupEntries) {
-            $profile = $recommendation.vm_profile
+            $vmProfile = $recommendation.vm_profile
             $label = if ($recommendation.compatibility_label -eq 'recommended') { 'Recommended' } else { 'Possible' }
-            $secureBootText = if ($profile.secure_boot) { 'Enabled' } else { 'Disabled' }
-            $tpmText = if ($profile.tpm) { 'Yes' } else { 'No' }
+            $secureBootText = if ($vmProfile.secure_boot) { 'Enabled' } else { 'Disabled' }
+            $tpmText = if ($vmProfile.tpm) { 'Yes' } else { 'No' }
             $notes = @($recommendation.notes | Where-Object {
                 $trimmed = [string]$_
-                $trimmed -and ($trimmed -ne ('Use {0} as the preferred VM storage location for this guest.' -f $profile.storage_location))
+                $trimmed -and ($trimmed -ne ('Use {0} as the preferred VM storage location for this guest.' -f $vmProfile.storage_location))
             })
 
             $LineBuffer.Add(('- {0} [{1}]' -f $recommendation.display_name, $label))
             $LineBuffer.Add(('   Hypervisor: {0}' -f $recommendation.preferred_hypervisor))
             $LineBuffer.Add(('   Suggested setup: {0} vCPU, {1} MB RAM, {2} GB disk, {3}, Secure Boot {4}, TPM {5}, Network {6}' -f
-                $profile.vcpu,
-                $profile.memory_mb,
-                $profile.disk_gb,
-                $profile.firmware,
+                $vmProfile.vcpu,
+                $vmProfile.memory_mb,
+                $vmProfile.disk_gb,
+                $vmProfile.firmware,
                 $secureBootText,
                 $tpmText,
-                $profile.network
+                $vmProfile.network
             ))
-            $LineBuffer.Add(('   Save VM files on: {0}' -f $profile.storage_location))
+            $LineBuffer.Add(('   Save VM files on: {0}' -f $vmProfile.storage_location))
 
             if ($notes.Count -gt 0) {
                 $LineBuffer.Add(('   Notes: {0}' -f ($notes -join '; ')))
