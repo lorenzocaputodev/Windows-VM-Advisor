@@ -16,6 +16,17 @@ jobs:
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-dev.ps1
 
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+            Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+          }
+
+      - name: Lint
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\scripts\run-lint.ps1
+
       - name: Run test suite
         shell: pwsh
         run: powershell -ExecutionPolicy Bypass -File .\scripts\run-tests.ps1
