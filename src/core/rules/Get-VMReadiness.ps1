@@ -8,6 +8,7 @@ function Get-VMReadiness {
     )
 
     $thresholds = Get-AdvisorThresholds
+    $nominalMemoryGb = Get-NominalMemoryGb -ReportedGb ([double]$HostProfile.memory.total_gb)
     $storage = $HostProfile.storage
     $preferredStorage = $storage.preferred_vm_storage
     $blockers = New-Object System.Collections.ArrayList
@@ -50,6 +51,20 @@ function Get-VMReadiness {
         })
     }
 
+    $hostArchitecture = [string]$HostProfile.os.architecture
+    if ($hostArchitecture -match 'ARM') {
+        Add-UniqueText -List $blockers -Text 'This is an ARM host. The x64 guests in this catalog cannot run on it with VMware Workstation or VirtualBox.'
+        Add-Check -Id 'host-architecture' -Label 'Host architecture' -Status 'blocked' -Details ('Detected host architecture: {0}.' -f $hostArchitecture)
+    }
+    elseif ($hostArchitecture -match '32-bit|x86') {
+        Add-UniqueText -List $blockers -Text 'A 32-bit host cannot run 64-bit guests.'
+        Add-Check -Id 'host-architecture' -Label 'Host architecture' -Status 'blocked' -Details ('Detected host architecture: {0}.' -f $hostArchitecture)
+    }
+    else {
+        $architectureStatus = if ($hostArchitecture -match '64') { 'ok' } else { 'info' }
+        Add-Check -Id 'host-architecture' -Label 'Host architecture' -Status $architectureStatus -Details ('Detected host architecture: {0}.' -f $hostArchitecture)
+    }
+
     if ($HostProfile.cpu.virtualization_supported) {
         Add-Check -Id 'hardware-virtualization' -Label 'CPU virtualization support' -Status 'ok' -Details 'Hardware virtualization extensions were detected.'
     }
@@ -73,11 +88,11 @@ function Get-VMReadiness {
         Add-Check -Id 'slat' -Label 'Second Level Address Translation (SLAT)' -Status 'warning' -Details 'SLAT was not detected. Modern guests can still work, but performance headroom may be lower.'
     }
 
-    if ($HostProfile.memory.total_gb -lt $thresholds.readiness_blocked_ram_gb) {
+    if ($nominalMemoryGb -lt $thresholds.readiness_blocked_ram_gb) {
         Add-UniqueText -List $blockers -Text 'Host RAM is below the practical floor for a desktop VM.'
         Add-Check -Id 'memory' -Label 'Host RAM capacity' -Status 'blocked' -Details ('Only {0} GB of RAM was detected.' -f $HostProfile.memory.total_gb)
     }
-    elseif ($HostProfile.memory.total_gb -lt $thresholds.readiness_limited_ram_gb) {
+    elseif ($nominalMemoryGb -lt $thresholds.readiness_limited_ram_gb) {
         Add-UniqueText -List $limitations -Text 'Host RAM is better suited to lighter guest options.'
         Add-Check -Id 'memory' -Label 'Host RAM capacity' -Status 'warning' -Details ('{0} GB of RAM was detected. Lighter guests are the safer fit.' -f $HostProfile.memory.total_gb)
     }
@@ -85,7 +100,7 @@ function Get-VMReadiness {
         Add-Check -Id 'memory' -Label 'Host RAM capacity' -Status 'ok' -Details ('{0} GB of RAM leaves room for practical VM use.' -f $HostProfile.memory.total_gb)
     }
 
-    $minimumPracticalGuestStartGb = if ($HostProfile.memory.total_gb -ge $thresholds.readiness_limited_ram_gb) {
+    $minimumPracticalGuestStartGb = if ($nominalMemoryGb -ge $thresholds.readiness_limited_ram_gb) {
         [double]$thresholds.windows_guest_min_memory_mb / 1024
     }
     else {

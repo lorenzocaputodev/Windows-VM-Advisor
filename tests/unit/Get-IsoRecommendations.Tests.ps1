@@ -26,7 +26,7 @@ Describe 'Get-IsoRecommendations' {
 
     It 'keeps structural blockers ahead of Kali scope wording when the host is truly below minimum' {
         $hostProfile = Get-HostFixture -Name 'host-high-end'
-        $hostProfile.memory.total_gb = 3.5
+        $hostProfile.memory.total_gb = 3.0
         $hypervisors = New-HypervisorProfile
         $goal = New-UserGoal -GuestPreference 'auto' -Mode 'balanced'
         $readiness = Get-VMReadiness -HostProfile $hostProfile -HypervisorProfile $hypervisors
@@ -70,7 +70,7 @@ Describe 'Get-IsoRecommendations' {
         $nixos.vm_profile.memory_mb | Should -BeGreaterThan 0
     }
 
-    It 'keeps VM memory profiles on standard tiers and adds an operational free-RAM note on a strong host with low free RAM' {
+    It 'keeps VM memory profiles on standard tiers and only adds an advisory free-RAM note on a strong host with low free RAM' {
         $hostProfile = Get-HostFixture -Name 'host-secondary-storage'
         $hostProfile.memory.total_gb = 16.0
         $hostProfile.memory.free_gb = 3.7
@@ -88,10 +88,10 @@ Describe 'Get-IsoRecommendations' {
             Select-Object -ExpandProperty memory_mb
         )
 
-        $linuxMint.vm_profile.memory_mb | Should -Be 3072
-        $windows10.vm_profile.memory_mb | Should -Be 4096
-        ($linuxMint.notes -contains 'RAM is starting at 3072 MB because current free RAM is tighter than ideal. Close other applications before starting the VM.') | Should -BeTrue
-        ($windows10.notes -contains 'RAM is starting at 4096 MB because current free RAM is tighter than ideal. Close other applications before starting the VM.') | Should -BeTrue
+        $linuxMint.vm_profile.memory_mb | Should -Be 4096
+        $windows10.vm_profile.memory_mb | Should -Be 6144
+        ($linuxMint.notes -contains 'Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.') | Should -BeTrue
+        ($windows10.notes -contains 'Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.') | Should -BeTrue
         (@($profileMemoryValues | Where-Object { $_ -notin @(2048, 3072, 4096, 6144, 8192) }).Count) | Should -Be 0
     }
 
@@ -108,7 +108,22 @@ Describe 'Get-IsoRecommendations' {
 
         $linuxMint.vm_profile.memory_mb | Should -Be 4096
         ($linuxMint.notes -contains 'RAM was reduced to 4096 MB to stay within more comfortable host-safe limits.') | Should -BeTrue
-        (@($linuxMint.notes | Where-Object { $_ -match '^RAM is starting at ' }).Count) | Should -Be 0
+        (@($linuxMint.notes | Where-Object { $_ -match '^Current free RAM is tighter than ideal' }).Count) | Should -Be 0
+    }
+
+    It 'produces identical rankings, labels and profiles regardless of current free RAM' {
+        $hypervisors = New-HypervisorProfile
+        $goal = New-UserGoal -GuestPreference 'auto' -Mode 'balanced'
+        $summaries = foreach ($freeGb in @(1.0, 3.7, 12.0)) {
+            $hostProfile = Get-HostFixture -Name 'host-secondary-storage'
+            $hostProfile.memory.total_gb = 16.0
+            $hostProfile.memory.free_gb = $freeGb
+            $readiness = Get-VMReadiness -HostProfile $hostProfile -HypervisorProfile $hypervisors
+            $result = @(Get-IsoRecommendations -HostProfile $hostProfile -HypervisorProfile $hypervisors -UserGoal $goal -VMReadiness $readiness)
+            ($result | ForEach-Object { '{0}|{1}|{2}' -f $_.id, $_.compatibility_label, $_.vm_profile.memory_mb }) -join ';'
+        }
+
+        @($summaries | Select-Object -Unique).Count | Should -Be 1
     }
 
     It 'keeps the final ranking coherent on a strong host with low free RAM by leaving Linux ahead overall and Windows 10 ahead of Windows 11 inside the Windows pair' {
@@ -149,11 +164,11 @@ Describe 'Get-IsoRecommendations' {
             'possible',
             'possible',
             'possible',
-            'not_recommended',
-            'not_recommended'
+            'possible',
+            'possible'
         )
         @($result | Select-Object -First 2 -ExpandProperty id) | Should -Be @('linux-mint', 'ubuntu-lts')
-        $result[2].id | Should -Be 'debian-stable'
+        $result[2].id | Should -Be 'windows-10'
     }
 
     It 'uses only standard memory tiers on a lighter host and lets lighter Linux rise naturally' {
@@ -202,7 +217,7 @@ Describe 'Get-IsoRecommendations' {
         $rocky.compatibility_label | Should -Be 'possible'
         $rocky.fit_reason | Should -Be 'Enterprise-style Linux guest that can work here, though it is not the strongest default desktop fit.'
 
-        $hostProfile.memory.total_gb = 3.5
+        $hostProfile.memory.total_gb = 3.0
         $readiness = Get-VMReadiness -HostProfile $hostProfile -HypervisorProfile $hypervisors
         $result = @(Get-IsoRecommendations -HostProfile $hostProfile -HypervisorProfile $hypervisors -UserGoal $goal -VMReadiness $readiness)
         $rocky = @($result | Where-Object { $_.id -eq 'rocky-linux' })[0]

@@ -25,21 +25,26 @@ function Test-VirtualBoxSuitability {
         $warnings.Add('Virtualization support is missing or disabled.')
     }
 
-    if ($HypervisorProfile.hyperv_enabled -and $HypervisorProfile.memory_integrity_enabled) {
-        $score = 0
-        $status = 'blocked'
-        $warnings.Add('Hyper-V and Memory Integrity together make VirtualBox a poor recommendation on this host.')
-    }
-    elseif ($HypervisorProfile.hyperv_enabled) {
+    # VirtualBox 6+ can run on top of the Windows Hypervisor Platform, so Hyper-V and
+    # Memory Integrity lower the score heavily instead of blocking VirtualBox outright.
+    if ($HypervisorProfile.hyperv_enabled) {
         $score -= 20
-        $status = 'limited'
+        if ($status -ne 'blocked') {
+            $status = 'limited'
+        }
         $warnings.Add('Hyper-V may reduce compatibility or performance for VirtualBox.')
     }
 
-    if ($status -ne 'blocked' -and $HypervisorProfile.memory_integrity_enabled) {
+    if ($HypervisorProfile.memory_integrity_enabled) {
         $score -= 10
-        $status = 'limited'
+        if ($status -ne 'blocked') {
+            $status = 'limited'
+        }
         $warnings.Add('Memory Integrity may affect VirtualBox behavior on some hosts.')
+    }
+
+    if ($HypervisorProfile.hyperv_enabled -and $HypervisorProfile.memory_integrity_enabled) {
+        $warnings.Add('Hyper-V and Memory Integrity together make VirtualBox a poor recommendation on this host.')
     }
 
     [pscustomobject]@{

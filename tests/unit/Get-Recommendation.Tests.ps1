@@ -21,7 +21,7 @@ Describe 'Get-Recommendation' {
         $result.recommendations[0].vm_profile.vcpu | Should -BeGreaterThan 0
     }
 
-    It 'keeps Windows 11-family entries below practical mid-range choices when firmware security support is incomplete' {
+    It 'ranks Windows 11 first on a mid-range host because host TPM and Secure Boot no longer gate it' {
         $hostProfile = Get-HostFixture -Name 'host-midrange'
         $hypervisors = New-HypervisorProfile
         $goal = New-UserGoal -GuestPreference 'auto'
@@ -32,10 +32,11 @@ Describe 'Get-Recommendation' {
         $windows11 = @($result.recommendations | Where-Object { $_.id -eq 'windows-11' })[0]
 
         $result.vm_readiness.state | Should -Be 'ok'
-        $topThree[0] | Should -Be 'Linux Mint'
-        $topThree[1] | Should -Be 'Ubuntu LTS'
-        $topThree[2] | Should -Be 'Windows 10'
-        $windows11.compatibility_label | Should -Be 'not_recommended'
+        $topThree[0] | Should -Be 'Windows 11'
+        $topThree[1] | Should -Be 'Linux Mint'
+        $topThree[2] | Should -Be 'Ubuntu LTS'
+        $windows11.compatibility_label | Should -Be 'recommended'
+        ($windows11.notes -contains 'Enable the virtual TPM and Secure Boot in the hypervisor VM settings; the host TPM is not required.') | Should -BeTrue
         @($result.recommendations | Where-Object { $_.compatibility_label -eq 'recommended' }).Count | Should -Be 3
         (@($result.recommendations | Select-Object -ExpandProperty display_name) -contains 'Windows 10 Enterprise LTSC 2021') | Should -BeFalse
         (@($result.recommendations | Select-Object -ExpandProperty display_name) -contains 'Windows 11 Enterprise LTSC 2024') | Should -BeFalse
@@ -43,7 +44,7 @@ Describe 'Get-Recommendation' {
 
     It 'marks stronger lightweight Linux options as recommended on a constrained but usable host' {
         $hostProfile = Get-HostFixture -Name 'host-low-end'
-        $hostProfile.memory.total_gb = 7.6
+        $hostProfile.memory.total_gb = 5.6
         $hostProfile.memory.free_gb = 2.6
         $hypervisors = New-HypervisorProfile
         $goal = New-UserGoal -GuestPreference 'auto'
@@ -197,7 +198,7 @@ Describe 'Get-Recommendation' {
         (@($topEntry.notes | Where-Object { $_ -match 'current free RAM is tighter than ideal|Close other applications before starting the VM' }).Count) | Should -Be 0
     }
 
-    It 'keeps free-RAM pressure coherent across readiness messaging and final ranking on a strong host' {
+    It 'keeps readiness messaging and final ranking independent of current free RAM on a strong host' {
         $hostProfile = Get-HostFixture -Name 'host-secondary-storage'
         $hostProfile.memory.total_gb = 16.0
         $hostProfile.memory.free_gb = 3.7
@@ -210,18 +211,17 @@ Describe 'Get-Recommendation' {
         $ids = @($result.recommendations | Select-Object -ExpandProperty id)
 
         $result.vm_readiness.state | Should -Be 'limited'
-        $result.vm_readiness.primary_reason | Should -Be 'Host free RAM is low. Close other applications before starting a VM.'
-        $result.vm_readiness.headline | Should -Match 'current free RAM is tighter than ideal'
-        $result.vm_readiness.takeaway | Should -Match 'close other applications first'
+        $result.vm_readiness.primary_reason | Should -Be 'System drive free space is low, but D: is the better local drive for VM storage.'
+        $result.vm_readiness.headline | Should -Not -Match 'free RAM'
         $topEntry.id | Should -Be 'linux-mint'
-        $topEntry.vm_profile.memory_mb | Should -Be 3072
-        ($topEntry.notes -contains 'RAM is starting at 3072 MB because current free RAM is tighter than ideal. Close other applications before starting the VM.') | Should -BeTrue
-        $windows10.vm_profile.memory_mb | Should -Be 4096
+        $topEntry.vm_profile.memory_mb | Should -Be 4096
+        ($topEntry.notes -contains 'Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.') | Should -BeTrue
+        $windows10.vm_profile.memory_mb | Should -Be 6144
         $ids.IndexOf('windows-10') | Should -BeLessThan $ids.IndexOf('windows-11')
         $ids.IndexOf('windows-10') | Should -BeGreaterThan $ids.IndexOf('linux-mint')
     }
 
-    It 'uses the structured free-RAM pressure path in the ok state when the top practical guest is materially reshaped' {
+    It 'keeps the ok-state messaging unchanged when only current free RAM is low' {
         $hostProfile = Get-HostFixture -Name 'host-high-end'
         $hostProfile.memory.free_gb = 3.7
         $hypervisors = New-HypervisorProfile
@@ -231,12 +231,12 @@ Describe 'Get-Recommendation' {
         $topEntry = $result.recommendations[0]
 
         $result.vm_readiness.state | Should -Be 'ok'
-        $result.vm_readiness.primary_reason | Should -Be 'Host free RAM is low. Close other applications before starting a VM.'
-        $result.vm_readiness.headline | Should -Be 'This PC is ready for practical VM use, but current free RAM is tighter than ideal for the suggested starts.'
-        $result.vm_readiness.takeaway | Should -Be 'This PC is ready for practical VM use. Linux Mint is the clearest overall fit.'
-        $topEntry.id | Should -Be 'linux-mint'
-        $topEntry.vm_profile.memory_mb | Should -Be 3072
-        ($topEntry.notes -contains 'RAM is starting at 3072 MB because current free RAM is tighter than ideal. Close other applications before starting the VM.') | Should -BeTrue
+        $result.vm_readiness.headline | Should -Not -Match 'free RAM'
+        $result.vm_readiness.takeaway | Should -Be 'This PC is ready for practical VM use. Windows 11 is the clearest overall fit.'
+        ($result.vm_readiness.limitations -contains 'Host free RAM is low. Close other applications before starting a VM.') | Should -BeTrue
+        $topEntry.id | Should -Be 'windows-11'
+        $topEntry.vm_profile.memory_mb | Should -Be 8192
+        ($topEntry.notes -contains 'Current free RAM is tighter than ideal for this starting profile. Close other applications before starting the VM.') | Should -BeTrue
     }
 
     It 'keeps Windows 10 ahead of Windows 11 in limited user-facing ordering when Windows 10 is the better Windows fit' {

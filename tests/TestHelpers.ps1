@@ -10,6 +10,7 @@ function Get-AdvisorRulePaths {
         'src\core\rules\Test-VirtualBoxSuitability.ps1',
         'src\core\rules\Test-VMwareSuitability.ps1',
         'src\core\util\Resolve-BootMode.ps1',
+        'src\core\util\Get-NominalMemoryGb.ps1',
         'src\core\rules\Get-VMReadiness.ps1',
         'src\core\rules\Get-IsoRecommendations.ps1',
         'src\core\rules\Get-Recommendation.ps1'

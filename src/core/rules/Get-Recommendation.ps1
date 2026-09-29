@@ -47,22 +47,6 @@ function Get-Recommendation {
         }
     }
 
-    function Get-RecommendationInternalFlag {
-        param(
-            [Parameter(Mandatory = $false)]
-            [psobject]$Recommendation,
-
-            [Parameter(Mandatory = $true)]
-            [string]$Name
-        )
-
-        if ($Recommendation -and (@($Recommendation.PSObject.Properties.Name) -contains $Name)) {
-            return [bool]$Recommendation.$Name
-        }
-
-        return $false
-    }
-
     $vmReadiness = Get-VMReadiness -HostProfile $HostProfile -HypervisorProfile $HypervisorProfile
     $recommendations = @(Get-IsoRecommendations -HostProfile $HostProfile -HypervisorProfile $HypervisorProfile -UserGoal $UserGoal -VMReadiness $vmReadiness)
 
@@ -90,12 +74,8 @@ function Get-Recommendation {
         Select-Object -First 1
     )
     $structuralLimitation = if ($structuralLimitations.Count -gt 0) { [string]$structuralLimitations[0] } else { $null }
-    $freeMemoryLimitations = @($vmReadiness.limitations | Where-Object { [string]$_ -eq 'Host free RAM is low. Close other applications before starting a VM.' })
-    $freeMemoryLimitation = if ($freeMemoryLimitations.Count -gt 0) { [string]$freeMemoryLimitations[0] } else { $null }
     $storageLimitations = @($vmReadiness.limitations | Where-Object { [string]$_ -match '(?i)(drive|storage|VM files)' } | Select-Object -First 1)
     $storageLimitation = if ($storageLimitations.Count -gt 0) { [string]$storageLimitations[0] } else { $null }
-    $bestPracticalHasMaterialFreeMemoryPressure = Get-RecommendationInternalFlag -Recommendation $bestPractical -Name '_material_free_memory_pressure'
-    $bestPracticalStorageLocation = if ($bestPractical -and $bestPractical.vm_profile) { [string]$bestPractical.vm_profile.storage_location } else { $null }
 
     if ($vmReadiness.state -eq 'ok' -and $recommendedCount -eq 0 -and $possibleCount -gt 0) {
         $vmReadiness.state = 'limited'
@@ -124,9 +104,6 @@ function Get-Recommendation {
         $dominantLimitation = if ($structuralLimitation) {
             [string]$structuralLimitation
         }
-        elseif ($freeMemoryLimitation -and $bestPracticalHasMaterialFreeMemoryPressure) {
-            [string]$freeMemoryLimitation
-        }
         elseif ($storageLimitation) {
             [string]$storageLimitation
         }
@@ -146,16 +123,7 @@ function Get-Recommendation {
         )
         $storageDominant = [bool]($storageLimitation -and $dominantLimitation -eq $storageLimitation)
 
-        if ($freeMemoryLimitation -and $bestPracticalHasMaterialFreeMemoryPressure) {
-            $vmReadiness.headline = 'This PC can run VMs, but current free RAM is tighter than ideal for the suggested starts.'
-            if ($hasSecondaryPreferredStorage -and $bestPracticalStorageLocation) {
-                Set-ObjectProperty -Object $vmReadiness -Name 'takeaway' -Value ('This PC is limited for VM use right now. Start with {0}, close other applications first, and keep VM files on {1}.' -f $bestPractical.display_name, $bestPracticalStorageLocation)
-            }
-            else {
-                Set-ObjectProperty -Object $vmReadiness -Name 'takeaway' -Value ('This PC is limited for VM use right now. Start with {0}, then close other applications before launching the VM.' -f $bestPractical.display_name)
-            }
-        }
-        elseif ($bestPractical.family -eq 'linux' -and $storageDominant -and $hasSecondaryPreferredStorage) {
+        if ($bestPractical.family -eq 'linux' -and $storageDominant -and $hasSecondaryPreferredStorage) {
             $vmReadiness.headline = 'This PC can run VMs, but the system drive is tighter than ideal. Keep VM files on the secondary drive.'
             Set-ObjectProperty -Object $vmReadiness -Name 'takeaway' -Value ('This PC is limited for VM use mainly by storage layout. Use {0} and keep VM files on {1}.' -f $bestPractical.display_name, $preferredStorage.drive_letter)
         }
@@ -169,12 +137,7 @@ function Get-Recommendation {
         }
     }
     else {
-        if ($freeMemoryLimitation -and $bestPracticalHasMaterialFreeMemoryPressure) {
-            $vmReadiness.headline = 'This PC is ready for practical VM use, but current free RAM is tighter than ideal for the suggested starts.'
-            $vmReadiness.primary_reason = [string]$freeMemoryLimitation
-            Set-ObjectProperty -Object $vmReadiness -Name 'takeaway' -Value ('This PC is ready for practical VM use. Start with {0}, and close other applications before launching the VM.' -f $bestPractical.display_name)
-        }
-        elseif ($bestPractical.family -eq 'windows') {
+        if ($bestPractical.family -eq 'windows') {
             if ([string]$bestPractical.id -like 'windows-11*') {
                 $vmReadiness.headline = 'This PC is ready for practical VM use, and stronger Windows guests remain a realistic fit.'
             }
@@ -189,12 +152,6 @@ function Get-Recommendation {
         }
 
         Set-ObjectProperty -Object $vmReadiness -Name 'takeaway' -Value ('This PC is ready for practical VM use. {0} is the clearest overall fit.' -f $bestPractical.display_name)
-    }
-
-    foreach ($recommendation in @($recommendations)) {
-        if (@($recommendation.PSObject.Properties.Name) -contains '_material_free_memory_pressure') {
-            [void]$recommendation.PSObject.Properties.Remove('_material_free_memory_pressure')
-        }
     }
 
     return [pscustomobject]@{

@@ -19,6 +19,14 @@ function Get-AdvisorThresholds {
         windows11_good_storage_gb         = 100
         windows10_min_memory_gb           = 8
         linux_min_memory_gb               = 4
+        hypervisor_preference_fallback_score_gap = 20
+        structural_memory_reduction_penalty       = 4
+        structural_memory_reduction_penalty_light = 1
+        windows11_recommended_score       = 96
+        windows11_possible_score          = 80
+        windows10_recommended_score       = 82
+        windows10_possible_score          = 70
+        windows_fallback_possible_score   = 68
         profiles                          = [pscustomobject]@{
             windows = [pscustomobject]@{
                 light       = [pscustomobject]@{

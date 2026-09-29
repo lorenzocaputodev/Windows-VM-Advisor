@@ -16,14 +16,25 @@ Describe 'Test-Windows11Suitability' {
         ($result.score -ge 80) | Should -BeTrue
     }
 
-    It 'returns limited when Secure Boot or TPM are missing' {
+    It 'does not require host TPM, Secure Boot or UEFI because the hypervisor provides them to the guest' {
         $hostProfile = Get-HostFixture -Name 'host-midrange'
+        $hostProfile.firmware.boot_mode = 'BIOS'
 
         $result = Test-Windows11Suitability -HostProfile $hostProfile
 
-        $result.supported | Should -BeFalse
-        $result.status | Should -Be 'limited'
-        (($result.warnings -contains 'Secure Boot is not available or could not be confirmed.') -and ($result.warnings -contains 'TPM 2.0 was not confirmed.')) | Should -BeTrue
+        $result.supported | Should -BeTrue
+        $result.status | Should -Be 'good'
+        (@($result.warnings | Where-Object { $_ -match 'TPM|Secure Boot|UEFI' }).Count) | Should -Be 0
+    }
+
+    It 'treats an 8 GB host that reports 7.6 GB as meeting the Windows 11 minimum' {
+        $hostProfile = Get-HostFixture -Name 'host-high-end'
+        $hostProfile.memory.total_gb = 7.6
+
+        $result = Test-Windows11Suitability -HostProfile $hostProfile
+
+        $result.supported | Should -BeTrue
+        ($result.warnings -contains 'Host RAM is too low for a practical Windows 11 VM recommendation.') | Should -BeFalse
     }
 
     It 'returns limited when RAM and storage are below Windows 11 thresholds' {

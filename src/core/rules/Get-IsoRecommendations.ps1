@@ -15,6 +15,7 @@ function Get-IsoRecommendations {
 
     $thresholds = Get-AdvisorThresholds
     $catalog = Get-IsoCatalog
+    $nominalMemoryGb = Get-NominalMemoryGb -ReportedGb ([double]$HostProfile.memory.total_gb)
     $storage = $HostProfile.storage
     $defaultPreferredStorage = $storage.preferred_vm_storage
     $defaultPreferredFreeGb = if ($defaultPreferredStorage) { [double]$defaultPreferredStorage.free_gb } else { 0 }
@@ -24,20 +25,15 @@ function Get-IsoRecommendations {
         $HostProfile.cpu.virtualization_enabled_in_firmware
     )
     $hostConstrained = [bool](
-        $HostProfile.memory.total_gb -lt $thresholds.readiness_limited_ram_gb -or
+        $nominalMemoryGb -lt $thresholds.readiness_limited_ram_gb -or
         $defaultPreferredFreeGb -lt $thresholds.readiness_limited_storage_free_gb -or
         $defaultPreferredType -eq 'HDD'
     )
     $hostStrong = [bool](
-        $HostProfile.memory.total_gb -ge $thresholds.host_strong_memory_gb -and
+        $nominalMemoryGb -ge $thresholds.host_strong_memory_gb -and
         $defaultPreferredFreeGb -ge $thresholds.host_strong_storage_free_gb -and
         $HostProfile.cpu.threads -ge $thresholds.host_strong_threads -and
         $virtualizationReady
-    )
-    $hasTpm20 = [bool](
-        $HostProfile.security.tpm_present -and
-        $HostProfile.security.tpm_ready -and
-        ($HostProfile.security.tpm_version -match '2\.0')
     )
     $windows11Suitability = Test-Windows11Suitability -HostProfile $HostProfile
     $vmware = Test-VMwareSuitability -HostProfile $HostProfile -HypervisorProfile $HypervisorProfile
@@ -78,7 +74,7 @@ function Get-IsoRecommendations {
         }
     }
 
-    function Clamp-Level {
+    function Limit-Level {
         param([int]$Index)
 
         return [math]::Min(2, [math]::Max(0, $Index))
@@ -110,9 +106,9 @@ function Get-IsoRecommendations {
             [int]$LimitMb
         )
 
-        $matches = @($Tiers | Where-Object { $_ -le $LimitMb } | Sort-Object)
-        if ($matches.Count -gt 0) {
-            return [int]$matches[-1]
+        $tierMatches = @($Tiers | Where-Object { $_ -le $LimitMb } | Sort-Object)
+        if ($tierMatches.Count -gt 0) {
+            return [int]$tierMatches[-1]
         }
 
         return $null
@@ -124,9 +120,9 @@ function Get-IsoRecommendations {
             [int]$LimitMb
         )
 
-        $matches = @($Tiers | Where-Object { $_ -ge $LimitMb } | Sort-Object)
-        if ($matches.Count -gt 0) {
-            return [int]$matches[0]
+        $tierMatches = @($Tiers | Where-Object { $_ -ge $LimitMb } | Sort-Object)
+        if ($tierMatches.Count -gt 0) {
+            return [int]$tierMatches[0]
         }
 
         return $null
@@ -142,8 +138,19 @@ function Get-IsoRecommendations {
 
         $note = $null
 
+        # An explicit preference is honored unless it is blocked or clearly worse than the alternative.
+        $preferenceFallbackGap = [double]$thresholds.hypervisor_preference_fallback_score_gap
+        $vmwarePreferenceHolds = [bool](
+            $Vmware.status -ne 'blocked' -and
+            ($VirtualBox.status -eq 'blocked' -or ([double]$Vmware.score + $preferenceFallbackGap) -gt [double]$VirtualBox.score)
+        )
+        $virtualBoxPreferenceHolds = [bool](
+            $VirtualBox.status -ne 'blocked' -and
+            ($Vmware.status -eq 'blocked' -or ([double]$VirtualBox.score + $preferenceFallbackGap) -gt [double]$Vmware.score)
+        )
+
         if ($UserGoal.hypervisor_preference -eq 'vmware') {
-            if ($Vmware.status -ne 'blocked') {
+            if ($vmwarePreferenceHolds) {
                 return [pscustomobject]@{
                     name   = 'VMware Workstation'
                     status = $Vmware.status
@@ -160,7 +167,7 @@ function Get-IsoRecommendations {
             }
         }
         elseif ($UserGoal.hypervisor_preference -eq 'virtualbox') {
-            if ($VirtualBox.status -ne 'blocked') {
+            if ($virtualBoxPreferenceHolds) {
                 return [pscustomobject]@{
                     name   = 'Oracle VirtualBox'
                     status = $VirtualBox.status
@@ -338,17 +345,16 @@ function Get-IsoRecommendations {
         param(
             [pscustomobject]$Entry,
             [bool]$HostStrong,
-            [bool]$HostConstrained,
-            [bool]$FreeMemoryTight
+            [bool]$HostConstrained
         )
 
         switch ([string]$Entry.resource_tier) {
             'light' {
-                if ($HostConstrained -or $FreeMemoryTight) { return 3 }
+                if ($HostConstrained) { return 3 }
                 return 0
             }
             'heavy' {
-                if ($HostConstrained -or $FreeMemoryTight) { return -3 }
+                if ($HostConstrained) { return -3 }
                 if ($HostStrong) { return 2 }
                 return 0
             }
@@ -360,17 +366,16 @@ function Get-IsoRecommendations {
         param(
             [pscustomobject]$Entry,
             [bool]$HostStrong,
-            [bool]$HostConstrained,
-            [bool]$FreeMemoryTight
+            [bool]$HostConstrained
         )
 
         $adjustment = 0
         switch ([string]$Entry.role) {
             'mainstream_desktop' {
-                if ($HostConstrained -or $FreeMemoryTight) { $adjustment += 1 } else { $adjustment += 3 }
+                if ($HostConstrained) { $adjustment += 1 } else { $adjustment += 3 }
             }
             'lightweight_desktop' {
-                if ($HostConstrained -or $FreeMemoryTight) { $adjustment += 4 } else { $adjustment += 1 }
+                if ($HostConstrained) { $adjustment += 4 } else { $adjustment += 1 }
             }
             'advanced_desktop' {
                 if (-not $HostStrong) { $adjustment -= 2 }
@@ -435,16 +440,33 @@ function Get-IsoRecommendations {
         }
     }
 
+    function Remove-ProfileNotes {
+        param($Notes)
+
+        $filteredNotes = New-Object System.Collections.ArrayList
+        foreach ($existingNote in @($Notes)) {
+            $text = [string]$existingNote
+            if (
+                $text -and
+                $text -notmatch '^Use .+ as the preferred VM storage location' -and
+                $text -notmatch '^RAM was reduced to ' -and
+                                $text -notmatch '^(vCPU|RAM|Disk size) was reduced from ' -and
+                $text -notmatch '^Current free RAM is tighter than ideal for this starting profile' -and
+                $text -notmatch '^Enable the virtual TPM' -and
+                $text -notmatch '^Only .+ of RAM will remain for Windows' -and
+                $text -notmatch '^Windows 10 reached end of support'
+            ) {
+                [void]$filteredNotes.Add($text)
+            }
+        }
+
+        return $filteredNotes
+    }
+
     function Get-StructuralMemoryReductionNote {
         param([int]$FinalMemoryMb)
 
         return ('RAM was reduced to {0} MB to stay within more comfortable host-safe limits.' -f $FinalMemoryMb)
-    }
-
-    function Get-FreeMemoryAdjustedNote {
-        param([int]$FinalMemoryMb)
-
-        return ('RAM is starting at {0} MB because current free RAM is tighter than ideal. Close other applications before starting the VM.' -f $FinalMemoryMb)
     }
 
     function Get-FreeMemoryAdvisoryNote {
@@ -457,6 +479,19 @@ function Get-IsoRecommendations {
     foreach ($catalogEntry in $catalog) {
         $scopeNote = if (@($catalogEntry.PSObject.Properties.Name) -contains 'scope_note') {
             [string]@($catalogEntry.scope_note)[0]
+        }
+        else {
+            ''
+        }
+
+        $supportStatus = if (@($catalogEntry.PSObject.Properties.Name) -contains 'support_status') {
+            [string]@($catalogEntry.support_status)[0]
+        }
+        else {
+            'supported'
+        }
+        $supportNote = if (@($catalogEntry.PSObject.Properties.Name) -contains 'support_note') {
+            [string]@($catalogEntry.support_note)[0]
         }
         else {
             ''
@@ -477,6 +512,8 @@ function Get-IsoRecommendations {
             resource_tier              = [string](@($catalogEntry.resource_tier)[0])
             specialist                 = [bool](@($catalogEntry.specialist)[0])
             scope_note                 = $scopeNote
+            support_status             = $supportStatus
+            support_note               = $supportNote
             requires_tpm               = [bool](@($catalogEntry.requires_tpm)[0])
             requires_secure_boot       = [bool](@($catalogEntry.requires_secure_boot)[0])
             requires_uefi              = [bool](@($catalogEntry.requires_uefi)[0])
@@ -525,7 +562,7 @@ function Get-IsoRecommendations {
             Add-UniqueText -List $entryBlockers -Text 'Hardware virtualization must be enabled before a practical VM can be recommended.'
         }
 
-        if ($HostProfile.memory.total_gb -lt [double]$entry.min_host_ram_gb) {
+        if ($nominalMemoryGb -lt [double]$entry.min_host_ram_gb) {
             Add-UniqueText -List $entryBlockers -Text ('This guest expects at least {0} GB of host RAM.' -f $entry.min_host_ram_gb)
         }
 
@@ -533,23 +570,11 @@ function Get-IsoRecommendations {
             Add-UniqueText -List $entryBlockers -Text ('No suitable local fixed drive has enough free space for {0}.' -f $entry.display_name)
         }
 
-        if ($entry.requires_uefi -and $HostProfile.firmware.boot_mode -ne 'UEFI') {
-            Add-UniqueText -List $entryBlockers -Text 'UEFI boot mode was not detected.'
-        }
-
-        if ($entry.requires_secure_boot -and -not $HostProfile.firmware.secure_boot) {
-            Add-UniqueText -List $entryBlockers -Text 'Secure Boot is required for this guest but was not confirmed.'
-        }
-
-        if ($entry.requires_tpm -and -not $hasTpm20) {
-            Add-UniqueText -List $entryBlockers -Text 'TPM 2.0 is required for this guest but was not confirmed.'
-        }
-
         if ($entry.family -eq 'windows') {
-            if ($HostProfile.memory.total_gb -ge $thresholds.host_strong_memory_gb) {
+            if ($nominalMemoryGb -ge $thresholds.host_strong_memory_gb) {
                 $score += 8
             }
-            elseif ($HostProfile.memory.total_gb -ge $thresholds.windows10_min_memory_gb) {
+            elseif ($nominalMemoryGb -ge $thresholds.windows10_min_memory_gb) {
                 $score += 4
             }
 
@@ -569,10 +594,10 @@ function Get-IsoRecommendations {
             }
         }
         else {
-            if ($HostProfile.memory.total_gb -ge $thresholds.readiness_limited_ram_gb) {
+            if ($nominalMemoryGb -ge $thresholds.readiness_limited_ram_gb) {
                 $score += 8
             }
-            elseif ($HostProfile.memory.total_gb -ge $entry.min_host_ram_gb) {
+            elseif ($nominalMemoryGb -ge $entry.min_host_ram_gb) {
                 $score += 4
             }
 
@@ -619,7 +644,7 @@ function Get-IsoRecommendations {
 
             $requestedIndex = Get-LevelIndex -Name $UserGoal.mode
             $fitOffset = [int]$fitOffsets[[string]$entry.typical_vm_fit]
-            $targetLevelName = Get-LevelName -Index (Clamp-Level -Index ($requestedIndex + $fitOffset))
+            $targetLevelName = Get-LevelName -Index (Limit-Level -Index ($requestedIndex + $fitOffset))
             $targetProfile = $familyProfiles.$targetLevelName
             $targetVcpu = [int]$targetProfile.vcpu
             $targetMemoryMb = [int]$targetProfile.memory_mb
@@ -653,30 +678,18 @@ function Get-IsoRecommendations {
                 $memoryReducedStructurally = $true
             }
 
-            $freeMemoryTight = $false
-            $freeMemoryAdjusted = $false
+            # Free RAM is a moment-in-time reading, so it only adds an advisory note.
+            # Rankings, labels and profile sizes stay deterministic for the same hardware.
             if ($null -ne $HostProfile.memory.free_gb) {
                 $operationalFreeMemoryMb = [math]::Max(0, [int][math]::Floor(([double]$HostProfile.memory.free_gb * 1024) - 512))
                 if ($operationalFreeMemoryMb -lt $memoryMb) {
-                    $operationalTier = Get-HighestTierAtOrBelow -Tiers $memoryTiers -LimitMb $operationalFreeMemoryMb
-                    if ($null -ne $operationalTier -and $operationalTier -ge $minimumMemoryTier -and $operationalTier -lt $memoryMb) {
-                        $memoryMb = $operationalTier
-                        $profileAdjusted = $true
-                        $freeMemoryAdjusted = $true
-                        $freeMemoryTight = $true
-                    }
-                    else {
-                        if ($memoryMb -gt $minimumMemoryTier) {
-                            $memoryMb = $minimumMemoryTier
-                            $profileAdjusted = $true
-                            $freeMemoryAdjusted = $true
-                        }
-                        else {
-                            [void]$profileNotes.Add((Get-FreeMemoryAdvisoryNote))
-                        }
-                        $freeMemoryTight = $true
-                    }
+                    [void]$profileNotes.Add((Get-FreeMemoryAdvisoryNote))
                 }
+            }
+
+            $hostHeadroomGb = [math]::Round((([double]$HostProfile.memory.total_gb * 1024) - $memoryMb) / 1024, 1)
+            if ($hostHeadroomGb -lt [double]$thresholds.host_reserved_memory_gb) {
+                [void]$profileNotes.Add(('Only {0} GB of RAM will remain for Windows while this VM runs; keep other applications closed.' -f $hostHeadroomGb))
             }
 
             $diskCapGb = [math]::Max(0, [int][math]::Floor($entryStorageFreeGb - $thresholds.host_reserved_disk_gb))
@@ -696,17 +709,14 @@ function Get-IsoRecommendations {
                 Add-UniqueText -List $entryBlockers -Text ('The best local VM storage location still does not leave enough room for {0}.' -f $entry.display_name)
             }
             else {
-                if ($profileNotes.Count -gt 0 -or $freeMemoryAdjusted -or $memoryReducedStructurally) {
+                if ($profileNotes.Count -gt 0 -or $memoryReducedStructurally) {
                     $consolidatedProfileNotes = New-Object System.Collections.ArrayList
                     foreach ($profileNote in @($profileNotes)) {
                         $text = [string]$profileNote
                         [void]$consolidatedProfileNotes.Add($text)
                     }
 
-                    if ($freeMemoryAdjusted) {
-                        [void]$consolidatedProfileNotes.Insert(0, (Get-FreeMemoryAdjustedNote -FinalMemoryMb $memoryMb))
-                    }
-                    elseif ($memoryReducedStructurally) {
+                    if ($memoryReducedStructurally) {
                         [void]$consolidatedProfileNotes.Insert(0, (Get-StructuralMemoryReductionNote -FinalMemoryMb $memoryMb))
                     }
 
@@ -716,8 +726,7 @@ function Get-IsoRecommendations {
                 $firmware = if ($entry.requires_uefi -or $HostProfile.firmware.boot_mode -eq 'UEFI') { 'UEFI' } else { 'BIOS' }
                 $profileInfo = [pscustomobject]@{
                     reduced              = $profileAdjusted
-                    free_memory_adjusted = $freeMemoryAdjusted
-                    free_memory_tight    = $freeMemoryTight
+                    memory_reduced       = $memoryReducedStructurally
                     notes   = @($profileNotes)
                     profile = [pscustomobject]@{
                         vcpu             = $vcpu
@@ -733,51 +742,36 @@ function Get-IsoRecommendations {
             }
         }
 
-        if ($profileInfo) {
-            if ($profileInfo.free_memory_adjusted) {
-                if ($entry.family -eq 'windows') {
-                    $score -= 8
-                }
-                elseif ($entry.typical_vm_fit -eq 'light') {
-                    $score -= 2
-                }
-                else {
-                    $score -= 5
-                }
+        if ($profileInfo -and $profileInfo.memory_reduced) {
+            # A guest whose target RAM does not fit the host is a weaker pick than a guest that fits as designed.
+            if ($entry.typical_vm_fit -eq 'light') {
+                $score -= [int]$thresholds.structural_memory_reduction_penalty_light
             }
-            elseif ($profileInfo.free_memory_tight) {
-                if ($entry.family -eq 'windows') {
-                    $score -= 10
-                }
-                elseif ($entry.typical_vm_fit -eq 'light') {
-                    $score -= 3
-                }
-                else {
-                    $score -= 6
-                }
+            else {
+                $score -= [int]$thresholds.structural_memory_reduction_penalty
             }
         }
 
         if ($entryBlockers.Count -eq 0 -and $profileInfo) {
             $score += Get-DefaultDesktopFitAdjustment -Entry $entry
-            $score += Get-ResourceTierAdjustment -Entry $entry -HostStrong $hostStrong -HostConstrained $hostConstrained -FreeMemoryTight ([bool]$profileInfo.free_memory_tight)
-            $score += Get-RoleAdjustment -Entry $entry -HostStrong $hostStrong -HostConstrained $hostConstrained -FreeMemoryTight ([bool]$profileInfo.free_memory_tight)
+            $score += Get-ResourceTierAdjustment -Entry $entry -HostStrong $hostStrong -HostConstrained $hostConstrained
+            $score += Get-RoleAdjustment -Entry $entry -HostStrong $hostStrong -HostConstrained $hostConstrained
         }
 
         if ($entryBlockers.Count -eq 0 -and $profileInfo -and $hypervisorDecision.status -ne 'blocked') {
             if ([string]$entry.display_name -like 'Windows 11*') {
-                if ($windows11Suitability.supported -and $score -ge 96 -and -not $profileInfo.reduced) {
+                if ($windows11Suitability.supported -and $score -ge $thresholds.windows11_recommended_score -and -not $profileInfo.reduced) {
                     $label = 'recommended'
                 }
-                elseif ($score -ge 80) {
+                elseif ($score -ge $thresholds.windows11_possible_score) {
                     $label = 'possible'
                 }
             }
             elseif ([string]$entry.id -eq 'windows-10') {
-                if ($score -ge 82 -and -not $profileInfo.reduced) {
+                if ($score -ge $thresholds.windows10_recommended_score -and -not $profileInfo.reduced) {
                     $label = 'recommended'
                 }
-                elseif ($score -ge 70) {
+                elseif ($score -ge $thresholds.windows10_possible_score) {
                     $label = 'possible'
                 }
             }
@@ -795,13 +789,18 @@ function Get-IsoRecommendations {
                 }
             }
 
+            # An unsupported OS never gets the strongest tier, whatever the hardware fit.
+            if ($label -eq 'recommended' -and $entry.support_status -eq 'end_of_support') {
+                $label = 'possible'
+            }
+
             if ($label -eq 'not_recommended' -and $isNonWindowsGuest) {
                 $roleThresholds = Get-RoleLabelThresholds -Entry $entry -HostStrong $hostStrong -HostConstrained $hostConstrained
                 if ($score -ge $roleThresholds.possible) {
                     $label = 'possible'
                 }
             }
-            elseif ($label -eq 'not_recommended' -and $score -ge 68) {
+            elseif ($label -eq 'not_recommended' -and $score -ge $thresholds.windows_fallback_possible_score) {
                 $label = 'possible'
             }
 
@@ -824,42 +823,20 @@ function Get-IsoRecommendations {
             foreach ($profileNote in @($profileInfo.notes)) {
                 Add-UniqueText -List $entryNotes -Text ([string]$profileNote)
             }
+            if ($entry.support_status -eq 'end_of_support' -and $entry.support_note) {
+                Add-UniqueText -List $entryNotes -Text $entry.support_note
+            }
+            if ($entry.requires_tpm -or $entry.requires_secure_boot) {
+                Add-UniqueText -List $entryNotes -Text 'Enable the virtual TPM and Secure Boot in the hypervisor VM settings; the host TPM is not required.'
+            }
         }
 
         if (-not $profileInfo) {
-            $filteredNotes = New-Object System.Collections.ArrayList
-            foreach ($existingNote in @($entryNotes)) {
-                $text = [string]$existingNote
-                if (
-                    $text -and
-                    $text -notmatch '^Use .+ as the preferred VM storage location' -and
-                    $text -notmatch '^RAM was reduced to ' -and
-                    $text -notmatch '^RAM is starting at ' -and
-                    $text -notmatch '^(vCPU|RAM|Disk size) was reduced from ' -and
-                    $text -notmatch '^Current free RAM is tighter than ideal for this starting profile'
-                ) {
-                    [void]$filteredNotes.Add($text)
-                }
-            }
-            $entryNotes = $filteredNotes
+            $entryNotes = Remove-ProfileNotes -Notes $entryNotes
         }
 
         if ($label -eq 'not_recommended') {
-            $filteredNotes = New-Object System.Collections.ArrayList
-            foreach ($existingNote in @($entryNotes)) {
-                $text = [string]$existingNote
-                if (
-                    $text -and
-                    $text -notmatch '^Use .+ as the preferred VM storage location' -and
-                    $text -notmatch '^RAM was reduced to ' -and
-                    $text -notmatch '^RAM is starting at ' -and
-                    $text -notmatch '^(vCPU|RAM|Disk size) was reduced from ' -and
-                    $text -notmatch '^Current free RAM is tighter than ideal for this starting profile'
-                ) {
-                    [void]$filteredNotes.Add($text)
-                }
-            }
-            $entryNotes = $filteredNotes
+            $entryNotes = Remove-ProfileNotes -Notes $entryNotes
             $fitReason = if ($entryBlockers.Count -gt 0) {
                 [string]$entryBlockers[0]
             }
@@ -911,7 +888,6 @@ function Get-IsoRecommendations {
                 preferred_hypervisor   = [string]$hypervisorDecision.name
                 vm_profile             = if ($profileInfo) { $profileInfo.profile } else { $null }
                 notes                  = @($entryNotes)
-                _material_free_memory_pressure = [bool]($profileInfo -and $profileInfo.free_memory_adjusted)
             }
         })
     }

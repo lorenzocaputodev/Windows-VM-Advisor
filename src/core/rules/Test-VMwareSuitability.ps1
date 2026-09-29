@@ -27,13 +27,17 @@ function Test-VMwareSuitability {
 
     if ($HypervisorProfile.hyperv_enabled) {
         $score -= 10
-        $status = 'limited'
+        if ($status -ne 'blocked') {
+            $status = 'limited'
+        }
         $warnings.Add('Hyper-V may affect VMware performance depending on host configuration.')
     }
 
     if ($HypervisorProfile.memory_integrity_enabled) {
         $score -= 5
-        $status = 'limited'
+        if ($status -ne 'blocked') {
+            $status = 'limited'
+        }
         $warnings.Add('Memory Integrity may reduce virtualization smoothness on some hosts.')
     }
 

@@ -41,6 +41,8 @@
     "default_desktop_fit": "high",
     "resource_tier": "medium",
     "specialist": false,
+    "support_status": "end_of_support",
+    "support_note": "Windows 10 reached end of support on 14 October 2025 and no longer receives free security updates. Use it only for isolated testing or legacy software.",
     "requires_tpm": false,
     "requires_secure_boot": false,
     "requires_uefi": false,

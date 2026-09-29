@@ -16,6 +16,7 @@ function Test-Windows11Suitability {
         $preferredStorage = Get-PreferredVMStorage -Storage $storage -MinimumFreeGb $thresholds.windows11_min_storage_gb
     }
 
+    $nominalMemoryGb = Get-NominalMemoryGb -ReportedGb ([double]$HostProfile.memory.total_gb)
     $availableStorageGb = if ($preferredStorage) { [double]$preferredStorage.free_gb } else { 0 }
     $score = 0
     $reasons = New-Object System.Collections.Generic.List[string]
@@ -45,12 +46,14 @@ function Test-Windows11Suitability {
         }
     }
 
-    if ($HostProfile.memory.total_gb -ge $thresholds.windows11_good_memory_gb) {
-        $score += 20
+    # The guest gets a virtual TPM, UEFI firmware and Secure Boot from the hypervisor,
+    # so those host capabilities do not gate a Windows 11 recommendation.
+    if ($nominalMemoryGb -ge $thresholds.windows11_good_memory_gb) {
+        $score += 40
         $reasons.Add('Host has enough RAM for a balanced Windows 11 guest.')
     }
-    elseif ($HostProfile.memory.total_gb -ge $thresholds.windows11_min_memory_gb) {
-        $score += 10
+    elseif ($nominalMemoryGb -ge $thresholds.windows11_min_memory_gb) {
+        $score += 20
         $warnings.Add('Host RAM is usable but may be limiting for a comfortable Windows 11 VM.')
     }
     else {
@@ -59,11 +62,11 @@ function Test-Windows11Suitability {
     }
 
     if ($availableStorageGb -ge $thresholds.windows11_good_storage_gb) {
-        $score += 20
+        $score += 40
         $reasons.Add('A suitable local drive has enough free storage for a Windows 11 guest disk.')
     }
     elseif ($availableStorageGb -ge $thresholds.windows11_min_storage_gb) {
-        $score += 10
+        $score += 20
         $warnings.Add('The best local VM storage location is workable but still tight for a Windows 11 guest.')
     }
     else {
@@ -71,35 +74,8 @@ function Test-Windows11Suitability {
         $supported = $false
     }
 
-    if ($HostProfile.firmware.boot_mode -eq 'UEFI') {
-        $score += 15
-        $reasons.Add('UEFI boot mode is available.')
-    }
-    else {
-        $warnings.Add('UEFI was not detected.')
-        $supported = $false
-    }
-
-    if ($HostProfile.firmware.secure_boot) {
-        $score += 15
-        $reasons.Add('Secure Boot is available.')
-    }
-    else {
-        $warnings.Add('Secure Boot is not available or could not be confirmed.')
-        $supported = $false
-    }
-
-    if ($HostProfile.security.tpm_present -and $HostProfile.security.tpm_ready -and ($HostProfile.security.tpm_version -match '2\.0')) {
-        $score += 20
-        $reasons.Add('TPM 2.0 is available.')
-    }
-    else {
-        $warnings.Add('TPM 2.0 was not confirmed.')
-        $supported = $false
-    }
-
     if ($HostProfile.cpu.slat_supported) {
-        $score += 10
+        $score += 20
         $reasons.Add('SLAT support is available.')
     }
 

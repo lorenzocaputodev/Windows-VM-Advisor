@@ -19,9 +19,9 @@ Describe 'Get-BestFitGuidance' {
         }
         $guidance = Get-BestFitGuidance -Report $report
 
-        $guidance.best_overall.id | Should -Be 'linux-mint'
+        $guidance.best_overall.id | Should -Be 'windows-11'
         $guidance.best_lightweight.id | Should -Be 'debian-stable'
-        $guidance.best_windows.id | Should -Be 'windows-10'
+        $guidance.best_windows.id | Should -Be 'windows-11'
     }
 
     It 'uses the deterministic lightweight fallback only when no lightweight-desktop entry remains usable' {
