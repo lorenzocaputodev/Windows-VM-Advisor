@@ -4,7 +4,7 @@ Describe 'Get-IsoCatalog' {
         . (Join-Path $script:ProjectRoot 'src\core\catalog\Get-IsoCatalog.ps1')
     }
 
-    It 'contains exactly the final 12 guest entries for the redesigned catalog step' {
+    It 'contains exactly the curated 13 guest entries' {
         $catalog = @(Get-IsoCatalog)
         $ids = @($catalog | Select-Object -ExpandProperty id)
 
@@ -15,6 +15,7 @@ Describe 'Get-IsoCatalog' {
             'ubuntu-lts',
             'debian-stable',
             'fedora-workstation',
+            'opensuse-leap',
             'lubuntu',
             'kali-linux',
             'arch-linux',

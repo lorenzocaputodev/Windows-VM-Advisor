@@ -254,7 +254,7 @@ function Get-IsoRecommendations {
                 return 'Broadly supported Linux guest that still works here with a conservative start.'
             }
             'debian-stable' {
-                if ($Label -eq 'recommended') { return 'Conservative and lightweight VM choice for modest hardware.' }
+                if ($Label -eq 'recommended') { return 'Conservative and efficient VM choice for modest hardware; pick Xfce or LXQt at install for the lightest setup.' }
                 return 'Efficient Linux choice, but it fits best when the VM stays modest.'
             }
             'lubuntu' {
@@ -264,6 +264,10 @@ function Get-IsoRecommendations {
             'fedora-workstation' {
                 if ($Label -eq 'recommended') { return 'Modern developer-friendly Linux desktop for stronger or more technical hosts.' }
                 return 'Modern Linux desktop that stays workable here, but it is not the most conservative fit.'
+            }
+            'opensuse-leap' {
+                if ($Label -eq 'recommended') { return 'Stable and polished KDE Plasma desktop with strong system tooling, suited to stronger hosts.' }
+                return 'Stable KDE Plasma desktop that stays workable here, though it is not the most conservative fit.'
             }
             'arch-linux' {
                 if ($Label -eq 'recommended') { return 'Advanced DIY Linux option for users who want a more manual setup.' }
@@ -441,7 +445,10 @@ function Get-IsoRecommendations {
     }
 
     function Remove-ProfileNotes {
-        param($Notes)
+        param(
+            $Notes,
+            [string[]]$ExtraTexts = @()
+        )
 
         $filteredNotes = New-Object System.Collections.ArrayList
         foreach ($existingNote in @($Notes)) {
@@ -454,7 +461,8 @@ function Get-IsoRecommendations {
                 $text -notmatch '^Current free RAM is tighter than ideal for this starting profile' -and
                 $text -notmatch '^Enable the virtual TPM' -and
                 $text -notmatch '^Only .+ of RAM will remain for Windows' -and
-                $text -notmatch '^Windows 10 reached end of support'
+                $text -notmatch '^Windows 10 reached end of support' -and
+                $ExtraTexts -notcontains $text
             ) {
                 [void]$filteredNotes.Add($text)
             }
@@ -490,6 +498,12 @@ function Get-IsoRecommendations {
         else {
             'supported'
         }
+        $vmNote = if (@($catalogEntry.PSObject.Properties.Name) -contains 'vm_note') {
+            [string]@($catalogEntry.vm_note)[0]
+        }
+        else {
+            ''
+        }
         $supportNote = if (@($catalogEntry.PSObject.Properties.Name) -contains 'support_note') {
             [string]@($catalogEntry.support_note)[0]
         }
@@ -514,6 +528,7 @@ function Get-IsoRecommendations {
             scope_note                 = $scopeNote
             support_status             = $supportStatus
             support_note               = $supportNote
+            vm_note                    = $vmNote
             requires_tpm               = [bool](@($catalogEntry.requires_tpm)[0])
             requires_secure_boot       = [bool](@($catalogEntry.requires_secure_boot)[0])
             requires_uefi              = [bool](@($catalogEntry.requires_uefi)[0])
@@ -823,6 +838,9 @@ function Get-IsoRecommendations {
             foreach ($profileNote in @($profileInfo.notes)) {
                 Add-UniqueText -List $entryNotes -Text ([string]$profileNote)
             }
+            if ($entry.vm_note) {
+                Add-UniqueText -List $entryNotes -Text $entry.vm_note
+            }
             if ($entry.support_status -eq 'end_of_support' -and $entry.support_note) {
                 Add-UniqueText -List $entryNotes -Text $entry.support_note
             }
@@ -832,11 +850,11 @@ function Get-IsoRecommendations {
         }
 
         if (-not $profileInfo) {
-            $entryNotes = Remove-ProfileNotes -Notes $entryNotes
+            $entryNotes = Remove-ProfileNotes -Notes $entryNotes -ExtraTexts @($entry.vm_note)
         }
 
         if ($label -eq 'not_recommended') {
-            $entryNotes = Remove-ProfileNotes -Notes $entryNotes
+            $entryNotes = Remove-ProfileNotes -Notes $entryNotes -ExtraTexts @($entry.vm_note)
             $fitReason = if ($entryBlockers.Count -gt 0) {
                 [string]$entryBlockers[0]
             }
@@ -908,6 +926,11 @@ function Get-IsoRecommendations {
         3
     }
     $recommendedKept = 0
+    $strongHostOnlyIds = @(
+        $catalog |
+        Where-Object { (@($_.PSObject.Properties.Name) -contains 'strong_host_for_recommended') -and $_.strong_host_for_recommended } |
+        ForEach-Object { [string]$_.id }
+    )
 
     foreach ($recommendation in $sortedRecommendations) {
         if ([string]$recommendation.compatibility_label -ne 'recommended') {
@@ -921,7 +944,7 @@ function Get-IsoRecommendations {
         elseif ($VMReadiness.state -eq 'limited' -and $recommendation.family -eq 'windows') {
             $demoteToPossible = $true
         }
-        elseif (-not $hostStrong -and $recommendation.id -eq 'fedora-workstation') {
+        elseif (-not $hostStrong -and $strongHostOnlyIds -contains [string]$recommendation.id) {
             $demoteToPossible = $true
         }
         if ($demoteToPossible) {

@@ -165,6 +165,7 @@ Describe 'Get-IsoRecommendations' {
             'possible',
             'possible',
             'possible',
+            'possible',
             'possible'
         )
         @($result | Select-Object -First 2 -ExpandProperty id) | Should -Be @('linux-mint', 'ubuntu-lts')

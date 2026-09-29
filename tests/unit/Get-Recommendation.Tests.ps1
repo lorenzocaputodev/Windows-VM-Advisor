@@ -107,7 +107,7 @@ Describe 'Get-Recommendation' {
         $windows10.fit_reason | Should -Match 'Most forgiving Windows desktop option'
     }
 
-    It 'uses the cleaned 12-guest catalog and gives the new entries explicit first-class reasons' {
+    It 'uses the curated 13-guest catalog and gives the newer entries explicit first-class reasons' {
         $hostProfile = Get-HostFixture -Name 'host-midrange'
         $hypervisors = New-HypervisorProfile
         $goal = New-UserGoal -GuestPreference 'auto'
@@ -122,7 +122,7 @@ Describe 'Get-Recommendation' {
         ($names -contains 'MX Linux') | Should -BeFalse
         ($names -contains 'Pop!_OS') | Should -BeFalse
         ($names -contains 'Zorin OS') | Should -BeFalse
-        ($names -contains 'openSUSE Leap') | Should -BeFalse
+        ($names -contains 'openSUSE Leap') | Should -BeTrue
         ($names -contains 'Xubuntu') | Should -BeFalse
         ($names -contains 'Arch Linux') | Should -BeTrue
         ($names -contains 'Rocky Linux') | Should -BeTrue
