@@ -151,6 +151,12 @@ Lint the source with PSScriptAnalyzer (requires `Install-Module PSScriptAnalyzer
 powershell -ExecutionPolicy Bypass -File .\scripts\run-lint.ps1
 ```
 
+Regenerate the sample files in `examples/` after changing rules, catalog, or formatters:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\update-examples.ps1
+```
+
 Validate the sample output contract:
 
 ```powershell
