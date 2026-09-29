@@ -6,7 +6,7 @@ function Get-IsoCatalog {
     }
 
     if (-not $script:IsoCatalogCache) {
-        $script:IsoCatalogCache = Get-Content -Raw -Path $script:IsoCatalogPath | ConvertFrom-Json
+        $script:IsoCatalogCache = Get-Content -Raw -Encoding UTF8 -Path $script:IsoCatalogPath | ConvertFrom-Json
     }
 
     return $script:IsoCatalogCache
